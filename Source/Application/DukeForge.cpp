@@ -15,6 +15,7 @@
 #include <gcem.hpp>
 #include <jdksmidi/version.h>
 #include <jpeg/jversion.h>
+#include <png.h>
 #include <sndfile.h>
 #include <spdlog/spdlog.h>
 #include <tiffio.h>
@@ -45,6 +46,7 @@ DukeForge::DukeForge()
 	libraryInformation->addLibrary("JDKSMIDI", jdksmidi::LibraryVersion);
 	libraryInformation->addLibrary("LibJPEG", JVERSION);
 	libraryInformation->addLibrary("NanoSVG", NANOSVG_VERSION);
+	libraryInformation->addLibrary("LibPNG", PNG_LIBPNG_VER_STRING);
 	libraryInformation->addLibrary("Scintilla", SCINTILLA_VERSION);
 
 	std::string_view libSndFileVersion(sf_version_string());

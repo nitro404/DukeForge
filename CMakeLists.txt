@@ -74,6 +74,7 @@ target_link_libraries(${PROJECT_NAME}
 		JPEG::jpeg
 		lexilla::lexilla
 		NanoSVG::NanoSVG
+		PNG::png_static
 		scintilla::scintilla
 		SndFile::sndfile
 		TIFF::tiff

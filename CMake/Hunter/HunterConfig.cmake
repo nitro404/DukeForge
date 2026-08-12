@@ -87,6 +87,28 @@ hunter_config(nanosvg
 	SHA1 "a5e35c0ad9a3784b0627b84ce03c98de211d112d"
 )
 
+# LibPNG is used by wxWidgets.
+hunter_config(PNG
+	URL "https://github.com/Telefrag-Software/libpng/archive/refs/heads/hunter-1.6.53.2.zip"
+	VERSION "1.6.53.2"
+	SHA1 "caa094e0d01bc75599c8574ebb0286945a4139c4"
+	CMAKE_ARGS
+		BUILD_SHARED_LIBS=OFF
+		PNG_SHARED=OFF
+		PNG_STATIC=ON
+		PNG_EXECUTABLES=OFF
+		PNG_TESTS=OFF
+		PNG_DEBUG=OFF
+		PNG_DISABLE_AWK=ON
+		SKIP_INSTALL_ALL=OFF
+		SKIP_INSTALL_HEADERS=OFF
+		SKIP_INSTALL_LIBRARIES=OFF
+		SKIP_INSTALL_EXECUTABLES=ON
+		SKIP_INSTALL_PROGRAMS=ON
+		SKIP_INSTALL_EXPORT=OFF
+		SKIP_INSTALL_CONFIG_FILE=OFF
+)
+
 # Scintilla is used by Lexilla and wxWidgets.
 hunter_config(scintilla
 	URL "https://github.com/Telefrag-Software/scintilla/archive/refs/heads/hunter-wx-5.0.0.1.zip"
