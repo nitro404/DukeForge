@@ -1,6 +1,8 @@
 #ifndef _DUKE_FORGE_FRAME_H_
 #define _DUKE_FORGE_FRAME_H_
 
+#include <Signal/SignalConnectionGroup.h>
+
 #include <boost/signals2.hpp>
 #include <wx/wxprec.h>
 
@@ -17,6 +19,7 @@
 #include <memory>
 
 class DukeForge;
+class SettingsManagerPanel;
 
 class DukeForgeFrame final : public wxFrame {
 public:
@@ -38,6 +41,8 @@ private:
 	void onNotebookPageChanged(wxBookCtrlEvent & event);
 	void onQuit(wxCommandEvent & event);
 	void onAbout(wxCommandEvent & event);
+	void onSettingsReset();
+	void onSettingsSaved();
 
 #if wxUSE_MENUS
 	wxMenuItem * m_resetWindowPositionMenuItem;
@@ -46,6 +51,8 @@ private:
 
 	bool m_initialized;
 	wxNotebook * m_notebook;
+	SettingsManagerPanel * m_settingsManagerPanel;
+	SignalConnectionGroup m_settingsManagerPanelSignalConnectionGroup;
 
 	DukeForgeFrame(const DukeForgeFrame &) = delete;
 	const DukeForgeFrame & operator = (const DukeForgeFrame &) = delete;

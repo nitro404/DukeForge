@@ -4,9 +4,9 @@
 #include "Application/DukeForge.h"
 #include "Application/SettingsManager.h"
 #include "Project.h"
+#include "Settings/SettingsManagerPanel.h"
 #include "WXUtilities.h"
 
-#include <Analytics/Segment/SegmentAnalytics.h>
 #include <Core.h>
 #include <LibraryInformation.h>
 
@@ -19,7 +19,8 @@ DukeForgeFrame::DukeForgeFrame()
 	, m_resetWindowPositionMenuItem(nullptr)
 	, m_resetWindowSizeMenuItem(nullptr)
 #endif // wxUSE_MENUS
-	, m_notebook(nullptr) {
+	, m_notebook(nullptr)
+	, m_settingsManagerPanel(nullptr) {
 	SetIcon(wxICON(DUKEFORGE_ICON));
 
 #if wxUSE_MENUS
@@ -45,7 +46,9 @@ DukeForgeFrame::DukeForgeFrame()
 #endif // wxUSE_MENUS
 }
 
-DukeForgeFrame::~DukeForgeFrame() { }
+DukeForgeFrame::~DukeForgeFrame() {
+	m_settingsManagerPanelSignalConnectionGroup.disconnect();
+}
 
 bool DukeForgeFrame::isInitialized() const {
 	return m_initialized;
@@ -65,6 +68,14 @@ bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
 	SetMinSize(WXUtilities::createWXSize(SettingsManager::MINIMUM_WINDOW_SIZE));
 
 	m_notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP, "Main");
+
+	m_settingsManagerPanel = new SettingsManagerPanel(dukeForge, m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	m_notebook->AddPage(m_settingsManagerPanel, "Settings");
+
+	m_settingsManagerPanelSignalConnectionGroup = SignalConnectionGroup(
+		m_settingsManagerPanel->settingsReset.connect(std::bind(&DukeForgeFrame::onSettingsReset, this)),
+		m_settingsManagerPanel->settingsSaved.connect(std::bind(&DukeForgeFrame::onSettingsSaved, this))
+	);
 
 	ConsolePanel * consolePanel = new ConsolePanel(m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	m_notebook->AddPage(consolePanel, "Console");
@@ -121,6 +132,39 @@ void DukeForgeFrame::onMenuBarItemPressed(wxCommandEvent & event) {
 }
 #endif // wxUSE_MENUS
 
+void DukeForgeFrame::onNotebookPageChanging(wxBookCtrlEvent & event) {
+	wxWindow * currentPage = m_notebook->GetPage(m_notebook->GetSelection());
+
+	if(dynamic_cast<SettingsManagerPanel *>(currentPage) != nullptr) {
+		SettingsManagerPanel * settingsManagerPanel = static_cast<SettingsManagerPanel *>(currentPage);
+
+		if(!settingsManagerPanel->isModified()) {
+			return;
+		}
+
+		int result = wxMessageBox("You have unsaved settings modifications.\nWould you like to save settings and re-load the application, or discard your changes?", "Save Settings", wxYES_NO | wxCANCEL | wxICON_INFORMATION, this);
+
+		if(result == wxYES) {
+			settingsManagerPanel->save();
+			event.Veto();
+		}
+		else if(result == wxNO) {
+			static_cast<SettingsManagerPanel *>(currentPage)->discard();
+		}
+		else if(result == wxCANCEL) {
+			event.Veto();
+		}
+	}
+}
+
+void DukeForgeFrame::onNotebookPageChanged(wxBookCtrlEvent & event) {
+	wxWindow * currentPage = m_notebook->GetPage(m_notebook->GetSelection());
+
+	if(dynamic_cast<SettingsManagerPanel *>(currentPage) != nullptr) {
+		static_cast<SettingsManagerPanel *>(currentPage)->discard();
+	}
+}
+
 void DukeForgeFrame::onQuit(wxCommandEvent& WXUNUSED(event)) {
 	Close();
 }
@@ -142,6 +186,14 @@ void DukeForgeFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
 		wxOK | wxICON_INFORMATION,
 		this
 	);
+}
+
+void DukeForgeFrame::onSettingsReset() {
+	requestReload();
+}
+
+void DukeForgeFrame::onSettingsSaved() {
+	requestReload();
 }
 
 void DukeForgeFrame::requestReload() {

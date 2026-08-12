@@ -107,6 +107,10 @@ set(GUI_SOURCE_FILES
 	GUI/DukeForgeFrame.cpp
 	GUI/Hyperlink.h
 	GUI/Hyperlink.cpp
+	GUI/SettingPanel.h
+	GUI/SettingPanel.cpp
+	GUI/Settings/SettingsManagerPanel.h
+	GUI/Settings/SettingsManagerPanel.cpp
 	GUI/WXUtilities.h
 	GUI/WXUtilities.cpp
 )
