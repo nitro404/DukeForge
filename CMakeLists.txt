@@ -67,5 +67,6 @@ target_link_libraries(${PROJECT_NAME}
 		Core
 		expat::expat
 		JDKSMIDI::jdksmidi
+		JPEG::jpeg
 		SndFile::sndfile
 )

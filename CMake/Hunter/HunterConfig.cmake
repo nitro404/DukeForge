@@ -66,6 +66,13 @@ hunter_config(JDKSMIDI
 	SHA1 "2f47cc9b8eb1ef540aa5631501d88231c7b3b8ab"
 )
 
+# LibJPEG is used by LibTIFF and wxWidgets.
+hunter_config(Jpeg
+	URL "https://codeload.github.com/Telefrag-Software/libjpeg/zip/tags/9f"
+	VERSION "9f"
+	SHA1 "983e8b6e4a508944522f48c2dd680331012a322f"
+)
+
 hunter_config(SndFile
 	URL "https://codeload.github.com/Telefrag-Software/libsndfile/zip/tags/1.2.2.1"
 	VERSION "1.2.2.1"
