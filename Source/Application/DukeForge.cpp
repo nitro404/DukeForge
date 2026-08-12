@@ -1,5 +1,6 @@
 #include "DukeForge.h"
 
+#include "Game/File/GameFileFactoryRegistry.h"
 #include "Project.h"
 #include "SettingsManager.h"
 
@@ -26,6 +27,10 @@ DukeForge::DukeForge()
 
 	factoryRegistry.setFactory<SettingsManager>([]() {
 		return std::make_unique<SettingsManager>();
+	});
+
+	factoryRegistry.setFactory<GameFileFactoryRegistry>([]() {
+		return std::make_unique<GameFileFactoryRegistry>();
 	});
 
 	LibraryInformation * libraryInformation = LibraryInformation::getInstance();
