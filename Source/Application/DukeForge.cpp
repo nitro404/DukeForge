@@ -20,8 +20,17 @@
 #include <spdlog/spdlog.h>
 #include <tiffio.h>
 
+#define PCRE2_CODE_UNIT_WIDTH 8
+
+#include <pcre2.h>
+
 #include <chrono>
 #include <cstdio>
+
+// #include <vld.h>
+
+#define QUOTE(name) #name
+#define TOSTRING(macro) QUOTE(macro)
 
 DukeForge::DukeForge()
 	: Application()
@@ -46,6 +55,7 @@ DukeForge::DukeForge()
 	libraryInformation->addLibrary("JDKSMIDI", jdksmidi::LibraryVersion);
 	libraryInformation->addLibrary("LibJPEG", JVERSION);
 	libraryInformation->addLibrary("NanoSVG", NANOSVG_VERSION);
+	libraryInformation->addLibrary("PCRE2", fmt::format("{}.{}", PCRE2_MAJOR, PCRE2_MINOR), TOSTRING(PCRE2_DATE));
 	libraryInformation->addLibrary("LibPNG", PNG_LIBPNG_VER_STRING);
 	libraryInformation->addLibrary("Scintilla", SCINTILLA_VERSION);
 
