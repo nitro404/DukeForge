@@ -4,6 +4,7 @@
 #include "Application/DukeForge.h"
 #include "Application/SettingsManager.h"
 #include "Project.h"
+#include "Releases/ReleaseNotesPanel.h"
 #include "Settings/SettingsManagerPanel.h"
 #include "WXUtilities.h"
 
@@ -76,6 +77,9 @@ bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
 		m_settingsManagerPanel->settingsReset.connect(std::bind(&DukeForgeFrame::onSettingsReset, this)),
 		m_settingsManagerPanel->settingsSaved.connect(std::bind(&DukeForgeFrame::onSettingsSaved, this))
 	);
+
+	ReleaseNotesPanel * releaseNotesPanel = new ReleaseNotesPanel(m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	m_notebook->AddPage(releaseNotesPanel, "Release Notes");
 
 	ConsolePanel * consolePanel = new ConsolePanel(m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	m_notebook->AddPage(consolePanel, "Console");
@@ -162,6 +166,9 @@ void DukeForgeFrame::onNotebookPageChanged(wxBookCtrlEvent & event) {
 
 	if(dynamic_cast<SettingsManagerPanel *>(currentPage) != nullptr) {
 		static_cast<SettingsManagerPanel *>(currentPage)->discard();
+	}
+	else if(dynamic_cast<ReleaseNotesPanel *>(currentPage) != nullptr) {
+		static_cast<ReleaseNotesPanel *>(currentPage)->load();
 	}
 }
 

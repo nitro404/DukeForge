@@ -107,6 +107,8 @@ set(GUI_SOURCE_FILES
 	GUI/DukeForgeFrame.cpp
 	GUI/Hyperlink.h
 	GUI/Hyperlink.cpp
+	GUI/Releases/ReleaseNotesPanel.h
+	GUI/Releases/ReleaseNotesPanel.cpp
 	GUI/SettingPanel.h
 	GUI/SettingPanel.cpp
 	GUI/Settings/SettingsManagerPanel.h
