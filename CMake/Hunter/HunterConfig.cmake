@@ -18,3 +18,13 @@ hunter_config(JDKSMIDI
 	VERSION "2014.08.11a"
 	SHA1 "2f47cc9b8eb1ef540aa5631501d88231c7b3b8ab"
 )
+
+hunter_config(SndFile
+	URL "https://codeload.github.com/Telefrag-Software/libsndfile/zip/tags/1.2.2.1"
+	VERSION "1.2.2.1"
+	SHA1 "92258be67894f09f55f91cfa0d19e0957271a9dc"
+	CMAKE_ARGS
+		BUILD_TESTING=OFF
+		INSTALL_MANPAGES=OFF
+		ENABLE_CPACK=OFF
+)

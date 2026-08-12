@@ -12,6 +12,7 @@
 
 #include <gcem.hpp>
 #include <jdksmidi/version.h>
+#include <sndfile.h>
 #include <spdlog/spdlog.h>
 
 #include <chrono>
@@ -31,6 +32,13 @@ DukeForge::DukeForge()
 	libraryInformation->addLibrary("CSS-Color-Parser", CSS_COLOR_PARSER_VERSION);
 	libraryInformation->addLibrary("GCE-Math", fmt::format("{}.{}.{}", GCEM_VERSION_MAJOR, GCEM_VERSION_MINOR, GCEM_VERSION_PATCH));
 	libraryInformation->addLibrary("JDKSMIDI", jdksmidi::LibraryVersion);
+
+	std::string_view libSndFileVersion(sf_version_string());
+	size_t versionStartIndex = libSndFileVersion.find_first_of("0123456789");
+	if(versionStartIndex == std::string::npos) {
+		versionStartIndex = 0;
+	}
+	libraryInformation->addLibrary("LibSndFile", std::string(libSndFileVersion.substr(versionStartIndex, libSndFileVersion.length() - versionStartIndex)));
 }
 
 DukeForge::~DukeForge() { }
