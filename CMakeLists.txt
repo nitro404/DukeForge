@@ -48,7 +48,7 @@ elseif(MINGW)
 	add_compile_options(-Wa,-mbig-obj)
 endif()
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
+add_executable(${PROJECT_NAME} WIN32 ${SOURCE_FILES} ${RESOURCE_FILES})
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 

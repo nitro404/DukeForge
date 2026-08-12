@@ -11,43 +11,22 @@
 #include <Utilities/FileUtilities.h>
 #include <Utilities/StringUtilities.h>
 
-#include <expat.h>
 #include <gcem.hpp>
 #include <jdksmidi/version.h>
-#include <jpeg/jversion.h>
-#include <png.h>
 #include <sndfile.h>
 #include <spdlog/spdlog.h>
-#include <tiffio.h>
-#include <wx/app.h>
-#include <wx/cmdline.h>
-#include <wx/version.h>
-
-#if !wxUSE_UNICODE || wxUSE_UNICODE_UTF8
-	#define PCRE2_CODE_UNIT_WIDTH 8
-	typedef char wxRegChar;
-#elif wxUSE_UNICODE_UTF16
-	#define PCRE2_CODE_UNIT_WIDTH 16
-	typedef wchar_t wxRegChar;
-#else
-	#define PCRE2_CODE_UNIT_WIDTH 32
-	typedef wchar_t wxRegChar;
-#endif
-
-#include <pcre2.h>
 
 #include <chrono>
 #include <cstdio>
 
-// #include <vld.h>
-
-#define QUOTE(name) #name
-#define TOSTRING(macro) QUOTE(macro)
+static constexpr uint8_t NUMBER_OF_INITIALIZATION_STEPS = 4;
 
 DukeForge::DukeForge()
 	: Application()
 	, m_initialized(false)
-	, m_initializing(false) {
+	, m_initializing(false)
+	, m_initializationStep(0u)
+	, m_argumentHandlingFailed(false) {
 	FactoryRegistry & factoryRegistry = FactoryRegistry::getInstance();
 
 	factoryRegistry.setFactory<SettingsManager>([]() {
@@ -60,16 +39,8 @@ DukeForge::DukeForge()
 
 	LibraryInformation * libraryInformation = LibraryInformation::getInstance();
 	libraryInformation->addLibrary("CSS-Color-Parser", CSS_COLOR_PARSER_VERSION);
-	libraryInformation->addLibrary("Lexilla", LEXILLA_VERSION);
-	XML_Expat_Version expatVersion = XML_ExpatVersionInfo();
-	libraryInformation->addLibrary("LibExpat", fmt::format("{}.{}.{}", expatVersion.major, expatVersion.minor, expatVersion.micro));
 	libraryInformation->addLibrary("GCE-Math", fmt::format("{}.{}.{}", GCEM_VERSION_MAJOR, GCEM_VERSION_MINOR, GCEM_VERSION_PATCH));
 	libraryInformation->addLibrary("JDKSMIDI", jdksmidi::LibraryVersion);
-	libraryInformation->addLibrary("LibJPEG", JVERSION);
-	libraryInformation->addLibrary("NanoSVG", NANOSVG_VERSION);
-	libraryInformation->addLibrary("PCRE2", fmt::format("{}.{}", PCRE2_MAJOR, PCRE2_MINOR), TOSTRING(PCRE2_DATE));
-	libraryInformation->addLibrary("LibPNG", PNG_LIBPNG_VER_STRING);
-	libraryInformation->addLibrary("Scintilla", SCINTILLA_VERSION);
 
 	std::string_view libSndFileVersion(sf_version_string());
 	size_t versionStartIndex = libSndFileVersion.find_first_of("0123456789");
@@ -77,10 +48,6 @@ DukeForge::DukeForge()
 		versionStartIndex = 0;
 	}
 	libraryInformation->addLibrary("LibSndFile", std::string(libSndFileVersion.substr(versionStartIndex, libSndFileVersion.length() - versionStartIndex)));
-
-	libraryInformation->addLibrary("LibTIFF", TIFFLIB_VERSION_STR_MAJ_MIN_MIC);
-	libraryInformation->addLibrary("WebP", WEBP_VERSION);
-	libraryInformation->addLibrary("wxWidgets", fmt::format("{}.{}.{}.{}", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER, wxSUBRELEASE_NUMBER));
 }
 
 DukeForge::~DukeForge() { }
@@ -93,47 +60,67 @@ bool DukeForge::isInitializing() const {
 	return m_initializing;
 }
 
-bool DukeForge::initialize(int argc, char * argv[]) {
+uint8_t DukeForge::numberOfInitializationSteps() const {
+	return NUMBER_OF_INITIALIZATION_STEPS;
+}
+
+bool DukeForge::notifyInitializationProgress(const std::string & description, bool * aborted) {
+	if(!*initializationProgress(m_initializationStep++, NUMBER_OF_INITIALIZATION_STEPS, description)) {
+		if(aborted != nullptr) {
+			*aborted = true;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+bool DukeForge::initialize(int argc, char * argv[], bool * aborted) {
 	std::shared_ptr<ArgumentParser> arguments;
 
 	if(argc != 0) {
 		arguments = std::make_shared<ArgumentParser>(argc, argv);
 	}
 
-	return initialize(arguments);
+	return initialize(arguments, aborted);
 }
 
-bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments) {
+bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments, bool * aborted) {
+	std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
 	if(m_initialized || m_initializing) {
 		return false;
 	}
 
 	std::chrono::time_point<std::chrono::steady_clock> initializeSteadyStartTimePoint(std::chrono::steady_clock::now());
 	m_initializing = true;
+	m_initializationStep = 0;
+	m_argumentHandlingFailed = false;
+
+	if(!notifyInitializationProgress("Parsing Arguments", aborted)) {
+		m_initializing = false;
+		return false;
+	}
 
 	if(arguments != nullptr) {
 		m_arguments = arguments;
+	}
 
-		if(m_arguments->hasArgument("?", "help")) {
-			displayArgumentHelp();
-			return true;
-		}
-
-		if(m_arguments->hasArgument("version")) {
-			displayVersion();
-			return true;
-		}
-
-		if(m_arguments->hasArgument("info")) {
-			displayLibraryInformation();
-			return true;
-		}
+	if(!notifyInitializationProgress("Loading Settings", aborted)) {
+		m_initializing = false;
+		return false;
 	}
 
 	SettingsManager * settings = SettingsManager::getInstance();
 
 	if(!settings->isLoaded()) {
 		settings->load(m_arguments.get());
+	}
+
+	if(!notifyInitializationProgress("Initializing HTTP Service", aborted)) {
+		m_initializing = false;
+		return false;
 	}
 
 	HTTPConfiguration configuration = {
@@ -161,6 +148,11 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments) {
 		}
 	}
 
+	if(!notifyInitializationProgress("Initializing Time Zone Data Manager", aborted)) {
+		m_initializing = false;
+		return false;
+	}
+
 	TimeZoneDataManager * timeZoneDataManager = TimeZoneDataManager::getInstance();
 
 	if(timeZoneDataManager->isSupported()) {
@@ -184,10 +176,18 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments) {
 	m_initialized = true;
 	m_initializing = false;
 
+	if(!handleArguments(m_arguments.get())) {
+		m_argumentHandlingFailed = true;
+	}
+
+	notifyInitializationProgress("Initialization Complete");
+
 	return true;
 }
 
 void DukeForge::uninitialize() {
+	std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
 	if(!m_initialized) {
 		return;
 	}
@@ -200,6 +200,20 @@ void DukeForge::uninitialize() {
 	m_initialized = false;
 }
 
+bool DukeForge::didArgumentHandlingFail() const {
+	return m_argumentHandlingFailed;
+}
+
+bool DukeForge::handleArguments(const ArgumentParser * args) {
+	std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+	if(args == nullptr) {
+		return true;
+	}
+
+	return true;
+}
+
 std::string DukeForge::getArgumentHelpInformation() {
 	std::ostringstream argumentHelpStream;
 
@@ -210,16 +224,4 @@ std::string DukeForge::getArgumentHelpInformation() {
 	argumentHelpStream << " -? - alias for 'help'.\n";
 
 	return argumentHelpStream.str();
-}
-
-void DukeForge::displayArgumentHelp() {
-	printf("%s\n", getArgumentHelpInformation().data());
-}
-
-void DukeForge::displayVersion() {
-	printf("%s\n", APPLICATION_VERSION.data());
-}
-
-void DukeForge::displayLibraryInformation() {
-	printf("%s: %s (%s)\n%s\n", APPLICATION_NAME.data(), APPLICATION_VERSION.data(), APPLICATION_COMMIT_HASH.data(), LibraryInformation::getInstance()->getLibraryInformationString().data());
 }

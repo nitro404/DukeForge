@@ -1,6 +1,8 @@
 #ifndef _SETTINGS_MANAGER_H_
 #define _SETTINGS_MANAGER_H_
 
+#include <Dimension.h>
+#include <Point2D.h>
 #include <Singleton/Singleton.h>
 
 #include <rapidjson/document.h>
@@ -42,6 +44,9 @@ public:
 	static const bool DEFAULT_DOWNLOAD_THROTTLING_ENABLED;
 	static const std::chrono::minutes DEFAULT_CACERT_UPDATE_FREQUENCY;
 	static const std::chrono::minutes DEFAULT_TIME_ZONE_DATA_UPDATE_FREQUENCY;
+	static const Point2D DEFAULT_WINDOW_POSITION;
+	static const Dimension DEFAULT_WINDOW_SIZE;
+	static const Dimension MINIMUM_WINDOW_SIZE;
 
 	std::string dataDirectoryPath;
 	std::string timeZoneDataDirectoryName;
@@ -58,6 +63,8 @@ public:
 	std::optional<std::chrono::time_point<std::chrono::system_clock>> timeZoneDataLastDownloadedTimestamp;
 	std::chrono::minutes timeZoneDataUpdateFrequency;
 	bool analyticsConfirmationAcknowledged;
+	Point2D windowPosition;
+	Dimension windowSize;
 
 	std::map<std::string, std::string> fileETags;
 

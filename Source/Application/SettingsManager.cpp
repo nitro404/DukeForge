@@ -56,6 +56,11 @@ static constexpr const char * NOTIFICATIONS_CATEGORY_NAME = "notifications";
 
 static constexpr const char * NOTIFICATIONS_ANALYTICS_CONFIRMATION_PROPERTY_NAME = "analyticsConfirmation";
 
+static constexpr const char * WINDOW_CATEGORY_NAME = "window";
+
+static constexpr const char * WINDOW_POSITION_PROPERTY_NAME = "position";
+static constexpr const char * WINDOW_SIZE_PROPERTY_NAME = "size";
+
 const std::string SettingsManager::FILE_TYPE(fmt::format("{} Settings", APPLICATION_NAME));
 const uint32_t SettingsManager::FILE_FORMAT_VERSION = 1;
 const std::string SettingsManager::DEFAULT_SETTINGS_FILE_PATH(fmt::format("{} Settings.json", APPLICATION_NAME));
@@ -71,6 +76,9 @@ const std::string SettingsManager::DEFAULT_SEGMENT_ANALYTICS_DATA_FILE_NAME("Seg
 const bool SettingsManager::DEFAULT_DOWNLOAD_THROTTLING_ENABLED = true;
 const std::chrono::minutes SettingsManager::DEFAULT_CACERT_UPDATE_FREQUENCY = std::chrono::hours(2 * 24 * 7); // 2 weeks
 const std::chrono::minutes SettingsManager::DEFAULT_TIME_ZONE_DATA_UPDATE_FREQUENCY = std::chrono::hours(1 * 24 * 7); // 1 week
+const Point2D SettingsManager::DEFAULT_WINDOW_POSITION(-1, -1);
+const Dimension SettingsManager::DEFAULT_WINDOW_SIZE(1280, 1024);
+const Dimension SettingsManager::MINIMUM_WINDOW_SIZE(800, 600);
 
 static bool assignStringSetting(std::string & setting, const rapidjson::Value & categoryValue, const std::string & propertyName) {
 	if(propertyName.empty() || !categoryValue.IsObject() || !categoryValue.HasMember(propertyName.c_str())) {
@@ -137,6 +145,42 @@ static bool assignChronoSetting(T & setting, const rapidjson::Value & categoryVa
 	return true;
 }
 
+static bool assignPointSetting(Point2D & setting, const rapidjson::Value & categoryValue, const std::string & propertyName) {
+	if(propertyName.empty() || !categoryValue.IsObject() || !categoryValue.HasMember(propertyName.c_str())) {
+		return false;
+	}
+
+	const rapidjson::Value & settingValue = categoryValue[propertyName.c_str()];
+
+	std::optional<Point2D> optionalPoint(Point2D::parseFrom(settingValue));
+
+	if(!optionalPoint.has_value()) {
+		return false;
+	}
+
+	setting = std::move(optionalPoint.value());
+
+	return true;
+}
+
+static bool assignDimensionSetting(Dimension & setting, const rapidjson::Value & categoryValue, const std::string & propertyName) {
+	if(propertyName.empty() || !categoryValue.IsObject() || !categoryValue.HasMember(propertyName.c_str())) {
+		return false;
+	}
+
+	const rapidjson::Value & settingValue = categoryValue[propertyName.c_str()];
+
+	std::optional<Dimension> optionalDimension(Dimension::parseFrom(settingValue));
+
+	if(!optionalDimension.has_value()) {
+		return false;
+	}
+
+	setting = std::move(optionalDimension.value());
+
+	return true;
+}
+
 SettingsManager::SettingsManager()
 	: dataDirectoryPath(DEFAULT_DATA_DIRECTORY_PATH)
 	, timeZoneDataDirectoryName(DEFAULT_TIME_ZONE_DATA_DIRECTORY_NAME)
@@ -151,6 +195,8 @@ SettingsManager::SettingsManager()
 	, cacertUpdateFrequency(DEFAULT_CACERT_UPDATE_FREQUENCY)
 	, timeZoneDataUpdateFrequency(DEFAULT_TIME_ZONE_DATA_UPDATE_FREQUENCY)
 	, analyticsConfirmationAcknowledged(false)
+	, windowPosition(DEFAULT_WINDOW_POSITION)
+	, windowSize(DEFAULT_WINDOW_SIZE)
 	, m_loaded(false)
 	, m_filePath(DEFAULT_SETTINGS_FILE_PATH) { }
 
@@ -172,6 +218,8 @@ void SettingsManager::reset() {
 	timeZoneDataLastDownloadedTimestamp.reset();
 	timeZoneDataUpdateFrequency = DEFAULT_TIME_ZONE_DATA_UPDATE_FREQUENCY;
 	analyticsConfirmationAcknowledged = false;
+	windowPosition = DEFAULT_WINDOW_POSITION;
+	windowSize = DEFAULT_WINDOW_SIZE;
 	fileETags.clear();
 }
 
@@ -242,6 +290,15 @@ rapidjson::Document SettingsManager::toJSON() const {
 	notificationsCategoryValue.AddMember(rapidjson::StringRef(NOTIFICATIONS_ANALYTICS_CONFIRMATION_PROPERTY_NAME), rapidjson::Value(analyticsConfirmationAcknowledged), allocator);
 
 	settingsDocument.AddMember(rapidjson::StringRef(NOTIFICATIONS_CATEGORY_NAME), notificationsCategoryValue, allocator);
+
+	rapidjson::Value windowCategoryValue(rapidjson::kObjectType);
+
+	rapidjson::Value windowPositionValue(windowPosition.toJSON(allocator));
+	windowCategoryValue.AddMember(rapidjson::StringRef(WINDOW_POSITION_PROPERTY_NAME), windowPositionValue, allocator);
+	rapidjson::Value windowSizeValue(windowSize.toJSON(allocator));
+	windowCategoryValue.AddMember(rapidjson::StringRef(WINDOW_SIZE_PROPERTY_NAME), windowSizeValue, allocator);
+
+	settingsDocument.AddMember(rapidjson::StringRef(WINDOW_CATEGORY_NAME), windowCategoryValue, allocator);
 
 	rapidjson::Value fileETagsValue(rapidjson::kObjectType);
 
@@ -359,6 +416,13 @@ bool SettingsManager::parseFrom(const rapidjson::Value & settingsDocument) {
 		const rapidjson::Value & notificationsValue = settingsDocument[NOTIFICATIONS_CATEGORY_NAME];
 
 		assignBooleanSetting(analyticsConfirmationAcknowledged, notificationsValue, NOTIFICATIONS_ANALYTICS_CONFIRMATION_PROPERTY_NAME);
+	}
+
+	if(settingsDocument.HasMember(WINDOW_CATEGORY_NAME) && settingsDocument[WINDOW_CATEGORY_NAME].IsObject()) {
+		const rapidjson::Value & windowCategoryValue = settingsDocument[WINDOW_CATEGORY_NAME];
+
+		assignPointSetting(windowPosition, windowCategoryValue, WINDOW_POSITION_PROPERTY_NAME);
+		assignDimensionSetting(windowSize, windowCategoryValue, WINDOW_SIZE_PROPERTY_NAME);
 	}
 
 	if(settingsDocument.HasMember(FILE_ETAGS_PROPERTY_NAME) && settingsDocument[FILE_ETAGS_PROPERTY_NAME].IsObject()) {

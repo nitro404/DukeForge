@@ -89,11 +89,23 @@ set(MAIN_SOURCE_FILES
 	Game/File/Zip/Zip.cpp
 	Game/NoCDCracker.h
 	Game/NoCDCracker.cpp
-	Main.cpp
 	Project.h
 )
 
+set(GUI_SOURCE_FILES
+	GUI/DukeForgeApplication.h
+	GUI/DukeForgeApplication.cpp
+	GUI/DukeForgeFrame.h
+	GUI/DukeForgeFrame.cpp
+	GUI/Hyperlink.h
+	GUI/Hyperlink.cpp
+	GUI/WXUtilities.h
+	GUI/WXUtilities.cpp
+)
+
 list(APPEND SOURCE_FILES ${MAIN_SOURCE_FILES} ${MAIN_SOURCE_FILES_${PLATFORM_UPPER}})
+
+list(APPEND SOURCE_FILES ${GUI_SOURCE_FILES})
 
 list(TRANSFORM SOURCE_FILES PREPEND "${_SOURCE_DIRECTORY}/")
 

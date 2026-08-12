@@ -95,7 +95,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-D3DMODMGR_ICON          ICON                    "../Icon/DukeForge.ico"
+DUKEFORGE_ICON          ICON                    "../Icon/DukeForge.ico"
 
 #endif    // English (Canada) resources
 /////////////////////////////////////////////////////////////////////////////
