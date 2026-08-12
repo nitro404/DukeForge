@@ -3,6 +3,8 @@ include_guard()
 set(MAIN_SOURCE_FILES
 	Application/DukeForge.h
 	Application/DukeForge.cpp
+	Application/SettingsManager.h
+	Application/SettingsManager.cpp
 	Main.cpp
 	Project.h
 )
