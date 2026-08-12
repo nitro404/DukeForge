@@ -11,6 +11,7 @@
 #include <Utilities/StringUtilities.h>
 
 #include <gcem.hpp>
+#include <jdksmidi/version.h>
 #include <spdlog/spdlog.h>
 
 #include <chrono>
@@ -29,6 +30,7 @@ DukeForge::DukeForge()
 	LibraryInformation * libraryInformation = LibraryInformation::getInstance();
 	libraryInformation->addLibrary("CSS-Color-Parser", CSS_COLOR_PARSER_VERSION);
 	libraryInformation->addLibrary("GCE-Math", fmt::format("{}.{}.{}", GCEM_VERSION_MAJOR, GCEM_VERSION_MINOR, GCEM_VERSION_PATCH));
+	libraryInformation->addLibrary("JDKSMIDI", jdksmidi::LibraryVersion);
 }
 
 DukeForge::~DukeForge() { }
