@@ -1,5 +1,27 @@
 include_guard()
 
+# CatchSelfTest is used by wxWidgets.
+hunter_config(CatchSelfTest
+	URL "https://codeload.github.com/catchorg/catch2/zip/tags/v3.5.0"
+	VERSION "3.5.0.0"
+	SHA1 "fd37a71ebf9455181a44fe7e2a0d56bb3c07b973"
+	CMAKE_ARGS
+		CATCH_INSTALL_DOCS=OFF
+		CATCH_INSTALL_EXTRAS=OFF
+		CATCH_DEVELOPMENT_BUILD=OFF
+		CATCH_ENABLE_REPRODUCIBLE_BUILD=ON
+		CATCH_BUILD_TESTING=OFF
+		CATCH_BUILD_EXAMPLES=OFF
+		CATCH_BUILD_EXTRA_TESTS=OFF
+		CATCH_BUILD_FUZZERS=OFF
+		CATCH_BUILD_BENCHMARKS=OFF
+		CATCH_ENABLE_COVERAGE=OFF
+		CATCH_ENABLE_WERROR=ON
+		CATCH_BUILD_SURROGATES=OFF
+		CATCH_ENABLE_CONFIGURE_TESTS=OFF
+		CATCH_ENABLE_CMAKE_HELPER_TESTS=OFF
+)
+
 hunter_config(CSSColorParser
 	URL "https://github.com/Telefrag-Software/css-color-cpp/archive/refs/heads/hunter-1.0.0.zip"
 	VERSION "1.0.0"
