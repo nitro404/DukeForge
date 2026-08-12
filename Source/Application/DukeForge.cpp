@@ -19,8 +19,20 @@
 #include <sndfile.h>
 #include <spdlog/spdlog.h>
 #include <tiffio.h>
+#include <wx/app.h>
+#include <wx/cmdline.h>
+#include <wx/version.h>
 
-#define PCRE2_CODE_UNIT_WIDTH 8
+#if !wxUSE_UNICODE || wxUSE_UNICODE_UTF8
+	#define PCRE2_CODE_UNIT_WIDTH 8
+	typedef char wxRegChar;
+#elif wxUSE_UNICODE_UTF16
+	#define PCRE2_CODE_UNIT_WIDTH 16
+	typedef wchar_t wxRegChar;
+#else
+	#define PCRE2_CODE_UNIT_WIDTH 32
+	typedef wchar_t wxRegChar;
+#endif
 
 #include <pcre2.h>
 
@@ -68,6 +80,7 @@ DukeForge::DukeForge()
 
 	libraryInformation->addLibrary("LibTIFF", TIFFLIB_VERSION_STR_MAJ_MIN_MIC);
 	libraryInformation->addLibrary("WebP", WEBP_VERSION);
+	libraryInformation->addLibrary("wxWidgets", fmt::format("{}.{}.{}.{}", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER, wxSUBRELEASE_NUMBER));
 }
 
 DukeForge::~DukeForge() { }

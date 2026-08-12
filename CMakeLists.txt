@@ -83,4 +83,5 @@ target_link_libraries(${PROJECT_NAME}
 		WebP::webp
 		WebP::webpdemux
 		WebP::sharpyuv
+		${wxWidgets_LIBRARIES}
 )

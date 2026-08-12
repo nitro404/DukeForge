@@ -206,3 +206,19 @@ hunter_config(WebP
 		WEBP_ENABLE_WUNUSED_RESULT=OFF
 		WEBP_UNICODE=ON
 )
+
+hunter_config(wxWidgets
+	URL "https://github.com/Telefrag-Software/wxWidgets/archive/refs/heads/hunter-3.3.1.1.zip"
+	VERSION "3.3.1.1"
+	SHA1 "a3bdf3eb7e2e5bf85a59170c056a16528a663845"
+	CMAKE_ARGS
+		wxBUILD_MONOLITHIC=ON
+		wxBUILD_SHARED=OFF
+		wxUSE_GUI=ON
+		wxBUILD_SAMPLES=OFF
+		wxBUILD_DEMOS=OFF
+		wxBUILD_BENCHMARKS=OFF
+		wxBUILD_PIC=ON
+		wxUSE_NO_RTTI=OFF
+		wxBUILD_INSTALL_PDB=ON
+)
