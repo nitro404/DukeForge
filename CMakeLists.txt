@@ -20,6 +20,8 @@ include(Hunter/HunterInit)
 
 project(${_PROJECT_NAME} VERSION 0.0.1.0 LANGUAGES C CXX)
 
+include(ThirdPartyLibraries)
+
 get_git_commit_hash()
 
 set(APPLICATION_GIT_COMMIT_HASH ${GIT_COMMIT_HASH})

@@ -4,11 +4,13 @@
 #include "SettingsManager.h"
 
 #include <Factory/FactoryRegistry.h>
+#include <LibraryInformation.h>
 #include <Network/HTTPService.h>
 #include <Platform/TimeZoneDataManager.h>
 #include <Utilities/FileUtilities.h>
 #include <Utilities/StringUtilities.h>
 
+#include <gcem.hpp>
 #include <spdlog/spdlog.h>
 
 #include <chrono>
@@ -22,6 +24,9 @@ DukeForge::DukeForge()
 	factoryRegistry.setFactory<SettingsManager>([]() {
 		return std::make_unique<SettingsManager>();
 	});
+
+	LibraryInformation * libraryInformation = LibraryInformation::getInstance();
+	libraryInformation->addLibrary("GCE-Math", fmt::format("{}.{}.{}", GCEM_VERSION_MAJOR, GCEM_VERSION_MINOR, GCEM_VERSION_PATCH));
 }
 
 DukeForge::~DukeForge() { }
