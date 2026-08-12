@@ -96,3 +96,31 @@ hunter_config(SndFile
 		INSTALL_MANPAGES=OFF
 		ENABLE_CPACK=OFF
 )
+
+# LibTIFF is used by wxWidgets.
+hunter_config(TIFF
+	URL "https://github.com/Telefrag-Software/libtiff/archive/refs/heads/hunter-4.7.1.0.zip"
+	VERSION "4.7.1.0"
+	SHA1 "761df43499ab065772209b5da0a228056d11a4ee"
+	CMAKE_ARGS
+		BUILD_SHARED_LIBS=OFF
+		tiff-cxx=ON
+		tiff-opengl=OFF
+		extra-warnings=OFF
+		fatal-warnings=OFF
+		strip-chopping=ON
+		defer-strile-load=OFF
+		chunky-strip-read=OFF
+		extrasample-as-alpha=ON
+		check-ycbcr-subsampling=ON
+		sphinx=OFF
+		jbig=OFF
+		jpeg=ON
+		lerc=OFF
+		libdeflate=OFF
+		lzma=ON
+		pixarlog=ON
+		webp=ON
+		zlib=ON
+		zstd=ON
+)

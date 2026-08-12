@@ -73,4 +73,6 @@ target_link_libraries(${PROJECT_NAME}
 		lexilla::lexilla
 		scintilla::scintilla
 		SndFile::sndfile
+		TIFF::tiff
+		TIFF::tiffxx
 )

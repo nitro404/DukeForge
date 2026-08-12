@@ -17,6 +17,7 @@
 #include <jpeg/jversion.h>
 #include <sndfile.h>
 #include <spdlog/spdlog.h>
+#include <tiffio.h>
 
 #include <chrono>
 #include <cstdio>
@@ -51,6 +52,8 @@ DukeForge::DukeForge()
 		versionStartIndex = 0;
 	}
 	libraryInformation->addLibrary("LibSndFile", std::string(libSndFileVersion.substr(versionStartIndex, libSndFileVersion.length() - versionStartIndex)));
+
+	libraryInformation->addLibrary("LibTIFF", TIFFLIB_VERSION_STR_MAJ_MIN_MIC);
 }
 
 DukeForge::~DukeForge() { }
