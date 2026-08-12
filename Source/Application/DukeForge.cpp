@@ -37,6 +37,7 @@ DukeForge::DukeForge()
 
 	LibraryInformation * libraryInformation = LibraryInformation::getInstance();
 	libraryInformation->addLibrary("CSS-Color-Parser", CSS_COLOR_PARSER_VERSION);
+	libraryInformation->addLibrary("Lexilla", LEXILLA_VERSION);
 	XML_Expat_Version expatVersion = XML_ExpatVersionInfo();
 	libraryInformation->addLibrary("LibExpat", fmt::format("{}.{}.{}", expatVersion.major, expatVersion.minor, expatVersion.micro));
 	libraryInformation->addLibrary("GCE-Math", fmt::format("{}.{}.{}", GCEM_VERSION_MAJOR, GCEM_VERSION_MINOR, GCEM_VERSION_PATCH));
