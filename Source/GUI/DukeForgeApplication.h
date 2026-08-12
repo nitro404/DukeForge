@@ -19,6 +19,7 @@
 
 #include <memory>
 
+class LogSinkWX;
 class DukeForgeInitializationDoneEvent;
 
 class DukeForgeApplication : public wxApp {
@@ -44,6 +45,7 @@ private:
 
 	std::shared_ptr<ArgumentParser> m_arguments;
 	std::shared_ptr<DukeForge> m_dukeForge;
+	std::shared_ptr<LogSinkWX> m_logSinkWX;
 	DukeForgeFrame * m_dukeForgeFrame;
 	DukeForgeFrame * m_newDukeForgeFrame;
 	boost::signals2::connection m_dukeForgeFrameReloadRequestedConnection;

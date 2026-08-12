@@ -1,6 +1,7 @@
 #include "DukeForgeApplication.h"
 
 #include "Application/SettingsManager.h"
+#include "Console/Logging/LogSinkWX.h"
 #include "Project.h"
 #include "WXUtilities.h"
 
@@ -91,6 +92,7 @@ DukeForgeApplication::~DukeForgeApplication() { }
 
 void DukeForgeApplication::initialize() {
 	m_dukeForge = std::make_shared<DukeForge>();
+	m_logSinkWX = std::make_shared<LogSinkWX>();
 
 	LibraryInformation * libraryInformation = LibraryInformation::getInstance();
 	XML_Expat_Version expatVersion = XML_ExpatVersionInfo();
@@ -103,6 +105,8 @@ void DukeForgeApplication::initialize() {
 	libraryInformation->addLibrary("LibTIFF", TIFFLIB_VERSION_STR_MAJ_MIN_MIC);
 	libraryInformation->addLibrary("WebP", WEBP_VERSION);
 	libraryInformation->addLibrary("wxWidgets", fmt::format("{}.{}.{}.{}", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER, wxSUBRELEASE_NUMBER));
+
+	LogSystem::getInstance()->addLogSink(m_logSinkWX);
 
 	SettingsManager * settings = SettingsManager::getInstance();
 
@@ -200,6 +204,8 @@ void DukeForgeApplication::showWindow() {
 	m_dukeForgeFrame->Show(true);
 	m_dukeForgeFrame->Raise();
 
+	m_logSinkWX->initialize();
+
 	windowCreationProgressDialog->Update(windowCreationProgressDialog->GetValue() + 1, windowCreationProgressDialog->GetMessage());
 }
 
@@ -232,6 +238,7 @@ void DukeForgeApplication::onFrameClosed(wxCloseEvent & event) {
 
 	if(m_reloadRequired) {
 		m_reloadRequired = false;
+		LogSystem::getInstance()->removeLogSink(m_logSinkWX);
 		ComponentRegistry::getInstance().deleteAllComponents();
 		m_dukeForgeFrame = m_newDukeForgeFrame;
 		m_newDukeForgeFrame = nullptr;
@@ -255,12 +262,15 @@ bool DukeForgeApplication::OnInit() {
 }
 
 int DukeForgeApplication::OnExit() {
+	LogSystem::getInstance()->removeLogSink(m_logSinkWX);
+
 	m_dukeForge->uninitialize();
 
 	return wxApp::OnExit();
 }
 
 void DukeForgeApplication::CleanUp() {
+	m_logSinkWX.reset();
 	m_dukeForge.reset();
 
 	ComponentRegistry::getInstance().deleteAllGlobalComponents();

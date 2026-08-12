@@ -93,6 +93,14 @@ set(MAIN_SOURCE_FILES
 )
 
 set(GUI_SOURCE_FILES
+	GUI/Console/ConsolePanel.h
+	GUI/Console/ConsolePanel.cpp
+	GUI/Console/Logging/CustomLogTextControl.h
+	GUI/Console/Logging/CustomLogTextControl.cpp
+	GUI/Console/Logging/LogSinkWX.h
+	GUI/Console/Logging/LogSinkWX.cpp
+	GUI/Console/Logging/PreformattedLogFormatter.h
+	GUI/Console/Logging/PreformattedLogFormatter.cpp
 	GUI/DukeForgeApplication.h
 	GUI/DukeForgeApplication.cpp
 	GUI/DukeForgeFrame.h

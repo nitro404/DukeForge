@@ -1,5 +1,6 @@
 #include "DukeForgeFrame.h"
 
+#include "Console/ConsolePanel.h"
 #include "Application/DukeForge.h"
 #include "Application/SettingsManager.h"
 #include "Project.h"
@@ -64,6 +65,9 @@ bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
 	SetMinSize(WXUtilities::createWXSize(SettingsManager::MINIMUM_WINDOW_SIZE));
 
 	m_notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP, "Main");
+
+	ConsolePanel * consolePanel = new ConsolePanel(m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	m_notebook->AddPage(consolePanel, "Console");
 
 	if(!dukeForge->isInitialized()) {
 		wxMessageBox(
