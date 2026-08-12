@@ -15,6 +15,11 @@ public:
 	bool initialize(std::shared_ptr<ArgumentParser> arguments);
 	void uninitialize();
 
+	static std::string getArgumentHelpInformation();
+	static void displayArgumentHelp();
+	static void displayVersion();
+	static void displayLibraryInformation();
+
 private:
 	std::atomic<bool> m_initialized;
 	std::atomic<bool> m_initializing;

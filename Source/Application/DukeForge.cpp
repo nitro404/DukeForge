@@ -14,6 +14,7 @@
 #include <spdlog/spdlog.h>
 
 #include <chrono>
+#include <cstdio>
 
 DukeForge::DukeForge()
 	: Application()
@@ -60,6 +61,21 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments) {
 
 	if(arguments != nullptr) {
 		m_arguments = arguments;
+
+		if(m_arguments->hasArgument("?", "help")) {
+			displayArgumentHelp();
+			return true;
+		}
+
+		if(m_arguments->hasArgument("version")) {
+			displayVersion();
+			return true;
+		}
+
+		if(m_arguments->hasArgument("info")) {
+			displayLibraryInformation();
+			return true;
+		}
 	}
 
 	SettingsManager * settings = SettingsManager::getInstance();
@@ -130,4 +146,28 @@ void DukeForge::uninitialize() {
 	m_arguments.reset();
 
 	m_initialized = false;
+}
+
+std::string DukeForge::getArgumentHelpInformation() {
+	std::ostringstream argumentHelpStream;
+
+	argumentHelpStream << APPLICATION_NAME << " version " << APPLICATION_VERSION << " arguments:\n";
+	argumentHelpStream << " --version - displays the application version.\n";
+	argumentHelpStream << " --info - displays application and dependency library version information.\n";
+	argumentHelpStream << " --help - displays this help message.\n";
+	argumentHelpStream << " -? - alias for 'help'.\n";
+
+	return argumentHelpStream.str();
+}
+
+void DukeForge::displayArgumentHelp() {
+	printf("%s\n", getArgumentHelpInformation().data());
+}
+
+void DukeForge::displayVersion() {
+	printf("%s\n", APPLICATION_VERSION.data());
+}
+
+void DukeForge::displayLibraryInformation() {
+	printf("%s: %s (%s)\n%s\n", APPLICATION_NAME.data(), APPLICATION_VERSION.data(), APPLICATION_COMMIT_HASH.data(), LibraryInformation::getInstance()->getLibraryInformationString().data());
 }
