@@ -54,6 +54,7 @@ DukeForge::DukeForge()
 	libraryInformation->addLibrary("LibSndFile", std::string(libSndFileVersion.substr(versionStartIndex, libSndFileVersion.length() - versionStartIndex)));
 
 	libraryInformation->addLibrary("LibTIFF", TIFFLIB_VERSION_STR_MAJ_MIN_MIC);
+	libraryInformation->addLibrary("WebP", WEBP_VERSION);
 }
 
 DukeForge::~DukeForge() { }

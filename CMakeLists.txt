@@ -62,6 +62,7 @@ target_compile_definitions(${PROJECT_NAME}
 		CSS_COLOR_PARSER_VERSION="${CSSColorParser_VERSION}"
 		LEXILLA_VERSION="${lexilla_VERSION}"
 		SCINTILLA_VERSION="${scintilla_VERSION}"
+		WEBP_VERSION="${WebP_VERSION}"
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -75,4 +76,7 @@ target_link_libraries(${PROJECT_NAME}
 		SndFile::sndfile
 		TIFF::tiff
 		TIFF::tiffxx
+		WebP::webp
+		WebP::webpdemux
+		WebP::sharpyuv
 )
