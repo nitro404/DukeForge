@@ -148,6 +148,8 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments, bool * abo
 		}
 	}
 
+	httpService->checkForInternetConnectivity();
+
 	if(!notifyInitializationProgress("Initializing Time Zone Data Manager", aborted)) {
 		m_initializing = false;
 		return false;
