@@ -5,6 +5,8 @@ set(MAIN_SOURCE_FILES
 	Application/DukeForge.cpp
 	Application/SettingsManager.h
 	Application/SettingsManager.cpp
+	Game/NoCDCracker.h
+	Game/NoCDCracker.cpp
 	Main.cpp
 	Project.h
 )
