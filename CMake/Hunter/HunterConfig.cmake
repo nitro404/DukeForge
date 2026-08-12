@@ -28,6 +28,31 @@ hunter_config(CSSColorParser
 	SHA1 "010e7260297e8091d4e97005ebd680eb1cac665b"
 )
 
+# LibEXPAT is used by wxWidgets.
+hunter_config(Expat
+	URL "https://codeload.github.com/libexpat/libexpat/zip/tags/R_2_7_3"
+	VERSION "2.7.3.0"
+	SHA1 "af45665222bb5c749a0750e971f2f72839f8999c"
+	CMAKE_ARGS
+		EXPAT_BUILD_TOOLS=OFF
+		EXPAT_BUILD_EXAMPLES=OFF
+		EXPAT_BUILD_TESTS=OFF
+		EXPAT_SHARED_LIBS=OFF
+		EXPAT_BUILD_DOCS=OFF
+		EXPAT_BUILD_FUZZERS=OFF
+		EXPAT_BUILD_PKGCONFIG=ON
+		EXPAT_OSSFUZZ_BUILD=OFF
+		EXPAT_ENABLE_INSTALL=ON
+		EXPAT_DTD=ON
+		EXPAT_GE=ON
+		EXPAT_NS=ON
+		EXPAT_WARNINGS_AS_ERRORS=OFF
+		EXPAT_ATTR_INFO=OFF
+		EXPAT_LARGE_SIZE=OFF
+		EXPAT_MIN_SIZE=OFF
+		EXPAT_MSVC_STATIC_CRT=ON
+)
+
 # GCE-Math is used by CSSColorParser.
 hunter_config(gcem
 	URL "https://github.com/Telefrag-Software/gcem/archive/refs/heads/hunter-1.18.0.1.zip"

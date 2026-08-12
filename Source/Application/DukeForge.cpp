@@ -11,6 +11,7 @@
 #include <Utilities/FileUtilities.h>
 #include <Utilities/StringUtilities.h>
 
+#include <expat.h>
 #include <gcem.hpp>
 #include <jdksmidi/version.h>
 #include <sndfile.h>
@@ -35,6 +36,8 @@ DukeForge::DukeForge()
 
 	LibraryInformation * libraryInformation = LibraryInformation::getInstance();
 	libraryInformation->addLibrary("CSS-Color-Parser", CSS_COLOR_PARSER_VERSION);
+	XML_Expat_Version expatVersion = XML_ExpatVersionInfo();
+	libraryInformation->addLibrary("LibExpat", fmt::format("{}.{}.{}", expatVersion.major, expatVersion.minor, expatVersion.micro));
 	libraryInformation->addLibrary("GCE-Math", fmt::format("{}.{}.{}", GCEM_VERSION_MAJOR, GCEM_VERSION_MINOR, GCEM_VERSION_PATCH));
 	libraryInformation->addLibrary("JDKSMIDI", jdksmidi::LibraryVersion);
 
