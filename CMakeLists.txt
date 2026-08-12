@@ -60,6 +60,7 @@ target_include_directories(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME}
 	PUBLIC
 		CSS_COLOR_PARSER_VERSION="${CSSColorParser_VERSION}"
+		SCINTILLA_VERSION="${scintilla_VERSION}"
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -68,5 +69,6 @@ target_link_libraries(${PROJECT_NAME}
 		expat::expat
 		JDKSMIDI::jdksmidi
 		JPEG::jpeg
+		scintilla::scintilla
 		SndFile::sndfile
 )

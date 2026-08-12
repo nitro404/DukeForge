@@ -73,6 +73,13 @@ hunter_config(Jpeg
 	SHA1 "983e8b6e4a508944522f48c2dd680331012a322f"
 )
 
+# Scintilla is used by Lexilla and wxWidgets.
+hunter_config(scintilla
+	URL "https://github.com/Telefrag-Software/scintilla/archive/refs/heads/hunter-wx-5.0.0.1.zip"
+	VERSION "5.0.0.1"
+	SHA1 "d390c96a0c02e879732e5c41e4783ede438f2952"
+)
+
 hunter_config(SndFile
 	URL "https://codeload.github.com/Telefrag-Software/libsndfile/zip/tags/1.2.2.1"
 	VERSION "1.2.2.1"

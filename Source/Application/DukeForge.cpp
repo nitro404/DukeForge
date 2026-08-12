@@ -42,6 +42,7 @@ DukeForge::DukeForge()
 	libraryInformation->addLibrary("GCE-Math", fmt::format("{}.{}.{}", GCEM_VERSION_MAJOR, GCEM_VERSION_MINOR, GCEM_VERSION_PATCH));
 	libraryInformation->addLibrary("JDKSMIDI", jdksmidi::LibraryVersion);
 	libraryInformation->addLibrary("LibJPEG", JVERSION);
+	libraryInformation->addLibrary("Scintilla", SCINTILLA_VERSION);
 
 	std::string_view libSndFileVersion(sf_version_string());
 	size_t versionStartIndex = libSndFileVersion.find_first_of("0123456789");
