@@ -57,6 +57,11 @@ target_include_directories(${PROJECT_NAME}
 		${_SOURCE_DIRECTORY}
 )
 
+target_compile_definitions(${PROJECT_NAME}
+	PUBLIC
+		CSS_COLOR_PARSER_VERSION="${CSSColorParser_VERSION}"
+)
+
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE
 		Core
