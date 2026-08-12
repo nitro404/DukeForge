@@ -1,0 +1,33 @@
+Build/*
+Temp/*
+Misc/*
+Test/*
+Time Zone/
+.vs
+Project.h
+Environment.h
+Resource.rc
+CDROM.INI
+DUKE3D.CFG
+stderr.txt
+stdout.txt
+DukeForge Settings.json
+Segment Analytics Cache.json
+*.cmd.in
+*.conf
+*.ncb
+*.aps
+*.sdf
+*.suo
+*.vcproj.*
+*.vcxproj.user
+*.opensdf
+*.EXE
+*.GRP
+*.CON
+*.DMO
+*.DAT
+*.SAV
+*.PCX
+*.BAT
+*.orig
