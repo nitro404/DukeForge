@@ -61,6 +61,7 @@ target_compile_definitions(${PROJECT_NAME}
 	PUBLIC
 		CSS_COLOR_PARSER_VERSION="${CSSColorParser_VERSION}"
 		LEXILLA_VERSION="${lexilla_VERSION}"
+		NANOSVG_VERSION="${nanosvg_VERSION}"
 		SCINTILLA_VERSION="${scintilla_VERSION}"
 		WEBP_VERSION="${WebP_VERSION}"
 )
@@ -72,6 +73,7 @@ target_link_libraries(${PROJECT_NAME}
 		JDKSMIDI::jdksmidi
 		JPEG::jpeg
 		lexilla::lexilla
+		NanoSVG::NanoSVG
 		scintilla::scintilla
 		SndFile::sndfile
 		TIFF::tiff

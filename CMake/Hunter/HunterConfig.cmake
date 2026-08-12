@@ -80,6 +80,13 @@ hunter_config(lexilla
 	SHA1 "7f44fe1fc6148a2dc495d549b8f32590af23d056"
 )
 
+# NanoSVG is used by wxWidgets.
+hunter_config(nanosvg
+	URL "https://github.com/Telefrag-Software/nanosvg/archive/refs/heads/hunter-2025-11-21.zip"
+	VERSION "2025.11.21"
+	SHA1 "a5e35c0ad9a3784b0627b84ce03c98de211d112d"
+)
+
 # Scintilla is used by Lexilla and wxWidgets.
 hunter_config(scintilla
 	URL "https://github.com/Telefrag-Software/scintilla/archive/refs/heads/hunter-wx-5.0.0.1.zip"
