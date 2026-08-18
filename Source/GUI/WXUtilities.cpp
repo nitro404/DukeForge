@@ -2,6 +2,10 @@
 
 #include "Hyperlink.h"
 
+#include <wx/msgdlg.h> 
+
+const std::string WXUtilities::FILE_DIALOG_ALL_FILES("All Files (*.*)|*.*");
+
 namespace WXUtilities {
 
 	wxPoint createWXPoint(const Point2D & point) {
@@ -164,6 +168,24 @@ namespace WXUtilities {
 		}
 
 		return "Unknown";
+	}
+
+	void showInfoMessage(const std::string & message, const std::string & title, wxWindow * parent) {
+		spdlog::info(message);
+
+		wxMessageBox(message, title, wxOK | wxICON_INFORMATION, parent);
+	}
+
+	void showWarningMessage(const std::string & message, const std::string & title, wxWindow * parent) {
+		spdlog::warn(message);
+
+		wxMessageBox(message, title, wxOK | wxICON_WARNING, parent);
+	}
+
+	void showErrorMessage(const std::string & message, const std::string & title, wxWindow * parent) {
+		spdlog::error(message);
+
+		wxMessageBox(message, title, wxOK | wxICON_ERROR, parent);
 	}
 
 }

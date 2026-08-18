@@ -18,6 +18,9 @@ static const std::string JSON_TRAILING_DATA_PROPERTY_NAME("trailingData");
 
 static constexpr bool BASE_64_ENCODE_DATA = false;
 
+const std::vector<std::string> Art::FILE_FORMAT_EXTENSIONS({ "ART" });
+const std::string Art::FILE_FORMAT_NAME("Build Engine Art");
+
 Art::Art(const std::string & filePath)
 	: GameFile(filePath)
 	, m_version(DEFAULT_VERSION)
@@ -177,6 +180,14 @@ Art & Art::operator = (const Art & art) {
 }
 
 Art::~Art() = default;
+
+const std::vector<std::string> & Art::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & Art::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 uint32_t Art::getVersion() const {
 	return m_version;

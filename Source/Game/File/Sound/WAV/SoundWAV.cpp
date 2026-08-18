@@ -2,6 +2,9 @@
 
 #include <spdlog/spdlog.h>
 
+const std::vector<std::string> SoundWAV::FILE_FORMAT_EXTENSIONS({ "WAV" });
+const std::string SoundWAV::FILE_FORMAT_NAME("Waveform Audio");
+
 SoundWAV::SoundWAV(SubType subType, uint32_t sampleRate, uint16_t numberOfChannels, const std::string & filePath)
 	: Sound(getFormatForSubType(subType), sampleRate, numberOfChannels) { }
 
@@ -20,6 +23,14 @@ SoundWAV & SoundWAV::operator = (SoundWAV && sound) noexcept {
 }
 
 SoundWAV::~SoundWAV() { }
+
+const std::vector<std::string> & SoundWAV::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & SoundWAV::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 std::unique_ptr<SoundWAV> SoundWAV::readFrom(const ByteBuffer & byteBuffer) {
 	std::unique_ptr<ByteBuffer> data(std::make_unique<ByteBuffer>(byteBuffer));

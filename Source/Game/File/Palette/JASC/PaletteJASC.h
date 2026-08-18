@@ -20,6 +20,8 @@ public:
 	static std::unique_ptr<PaletteJASC> loadFrom(const std::string & filePath);
 
 	// Palette Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
@@ -28,6 +30,9 @@ public:
 
 	bool operator == (const PaletteJASC & palette) const;
 	bool operator != (const PaletteJASC & palette) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static inline const std::string MAGIC = "JASC-PAL";
 	static inline const std::string VERSION = "0100";

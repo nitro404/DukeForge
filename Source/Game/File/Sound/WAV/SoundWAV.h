@@ -30,11 +30,16 @@ public:
 	static std::unique_ptr<SoundWAV> loadFrom(const std::string & filePath);
 
 	// Sound Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	Endianness getEndianness() const override;
 	bool isValid(bool verifyParent = true) const override;
 
 	static std::string getSubTypeName(SubType subType);
 	static int getFormatForSubType(SubType subType);
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static constexpr Endianness ENDIANNESS = Endianness::LittleEndian;
 };

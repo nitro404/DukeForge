@@ -7,6 +7,9 @@
 #include <fmt/core.h>
 #include <magic_enum/magic_enum.hpp>
 
+const std::vector<std::string> Zip::FILE_FORMAT_EXTENSIONS({ "ZIP" });
+const std::string Zip::FILE_FORMAT_NAME("Zip Archive");
+
 Zip::Zip(const std::string & filePath)
 	: GameFile(filePath)
 	, m_zipArchive(ZipArchive::createNew(filePath)) { }
@@ -63,6 +66,14 @@ Zip & Zip::operator = (const Zip & zip) {
 }
 
 Zip::~Zip() { }
+
+const std::vector<std::string> & Zip::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & Zip::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 std::unique_ptr<Zip> Zip::readFrom(const ByteBuffer & byteBuffer) {
 	std::unique_ptr<ZipArchive> zipArchive(ZipArchive::createFrom(std::make_unique<ByteBuffer>(byteBuffer)));

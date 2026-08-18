@@ -9,6 +9,9 @@
 
 #include <sstream>
 
+const std::vector<std::string> PaletteGPL::FILE_FORMAT_EXTENSIONS({ "GPL" });
+const std::string PaletteGPL::FILE_FORMAT_NAME("GIMP Palette");
+
 PaletteGPL::PaletteGPL(const std::string & filePath)
 	: Palette(filePath)
 	, m_colourTable(std::make_shared<ColourTable>())
@@ -83,6 +86,14 @@ PaletteGPL & PaletteGPL::operator = (const PaletteGPL & palette) {
 }
 
 PaletteGPL::~PaletteGPL() { }
+
+const std::vector<std::string> & PaletteGPL::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & PaletteGPL::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 std::shared_ptr<ColourTable> PaletteGPL::getColourTable(uint8_t colourTableIndex) const {
 	if(colourTableIndex != 0) {

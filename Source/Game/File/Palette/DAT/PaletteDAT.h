@@ -195,6 +195,8 @@ public:
 	static std::unique_ptr<PaletteDAT> loadFrom(const std::string & filePath);
 
 	// Palette Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
 	uint8_t numberOfColourTables() const override;
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
@@ -205,6 +207,9 @@ public:
 
 	bool operator == (const PaletteDAT & palette) const;
 	bool operator != (const PaletteDAT & palette) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static constexpr Endianness ENDIANNESS = Endianness::LittleEndian;
 	static constexpr uint8_t BYTES_PER_COLOUR = 3;

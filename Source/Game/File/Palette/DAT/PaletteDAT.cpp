@@ -15,6 +15,9 @@ static const std::array<std::pair<std::string /* description */, bool /* hasTran
 	std::make_pair("Episode 1 Ending Animation", false)
 });
 
+const std::vector<std::string> PaletteDAT::FILE_FORMAT_EXTENSIONS({ "DAT" });
+const std::string PaletteDAT::FILE_FORMAT_NAME("Build Engine Palette");
+
 std::optional<PaletteDAT::Type> PaletteDAT::determineType(const ByteBuffer & byteBuffer) {
 	// http://advsys.net/ken/palette.txt
 	//
@@ -142,6 +145,14 @@ PaletteDAT & PaletteDAT::operator = (const PaletteDAT & palette) {
 }
 
 PaletteDAT::~PaletteDAT() { }
+
+const std::vector<std::string> & PaletteDAT::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & PaletteDAT::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 PaletteDAT::Type PaletteDAT::getType() const {
 	return m_type;

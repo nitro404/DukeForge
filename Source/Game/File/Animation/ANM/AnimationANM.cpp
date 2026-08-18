@@ -7,6 +7,9 @@
 
 #include <spdlog/spdlog.h>
 
+const std::vector<std::string> AnimationANM::FILE_FORMAT_EXTENSIONS({ "ANM" });
+const std::string AnimationANM::FILE_FORMAT_NAME("Deluxe Paint Animation");
+
 AnimationANM::AnimationANM(const std::string & filePath)
 	: Animation(filePath)
 	, m_maximumNumberOfLargePages(DEFAULT_MAXIMUM_NUMBER_OF_LARGE_PAGES)
@@ -185,6 +188,14 @@ AnimationANM & AnimationANM::operator = (const AnimationANM & animation) {
 }
 
 AnimationANM::~AnimationANM() { }
+
+const std::vector<std::string> & AnimationANM::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & AnimationANM::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 uint16_t AnimationANM::maximumNumberOfLargePages() const {
 	return m_maximumNumberOfLargePages;

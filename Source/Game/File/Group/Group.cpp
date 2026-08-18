@@ -363,7 +363,7 @@ bool Group::addFile(const GroupFile & file, bool replace) {
 	return addFile(std::make_unique<GroupFile>(file), replace);
 }
 
-bool Group::addFiles(const std::vector<std::string> & filePaths, bool replace) {
+size_t Group::addFiles(const std::vector<std::string> & filePaths, bool replace) {
 	size_t numberOfFilesAdded = 0;
 
 	for(std::vector<std::string>::const_iterator i = filePaths.cbegin(); i != filePaths.cend(); ++i) {
@@ -375,7 +375,23 @@ bool Group::addFiles(const std::vector<std::string> & filePaths, bool replace) {
 	return numberOfFilesAdded;
 }
 
-bool Group::addFiles(const std::vector<std::shared_ptr<GroupFile>> & files, bool replace) {
+size_t Group::addFiles(std::vector<std::unique_ptr<GroupFile>> && files, bool replace) {
+	size_t numberOfFilesAdded = 0;
+
+	for(std::vector<std::unique_ptr<GroupFile>>::iterator i = files.begin(); i != files.end(); ++i) {
+		if(*i == nullptr) {
+			continue;
+		}
+
+		if(addFile(std::move(*i), replace)) {
+			numberOfFilesAdded++;
+		}
+	}
+
+	return numberOfFilesAdded;
+}
+
+size_t Group::addFiles(const std::vector<std::shared_ptr<GroupFile>> & files, bool replace) {
 	size_t numberOfFilesAdded = 0;
 
 	for(std::vector<std::shared_ptr<GroupFile>>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
@@ -391,7 +407,7 @@ bool Group::addFiles(const std::vector<std::shared_ptr<GroupFile>> & files, bool
 	return numberOfFilesAdded;
 }
 
-bool Group::addFiles(const Group & group, bool replace) {
+size_t Group::addFiles(const Group & group, bool replace) {
 	size_t numberOfFilesAdded = 0;
 
 	for(std::vector<std::shared_ptr<GroupFile>>::const_iterator i = group.m_files.cbegin(); i != group.m_files.cend(); ++i) {

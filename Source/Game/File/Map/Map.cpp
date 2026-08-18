@@ -20,6 +20,9 @@ static const std::string JSON_WALLS_PROPERTY_NAME("walls");
 static const std::string JSON_SPRITES_PROPERTY_NAME("sprites");
 static const std::string JSON_TRAILING_DATA_PROPERTY_NAME("trailingData");
 
+const std::vector<std::string> Map::FILE_FORMAT_EXTENSIONS({ "MAP" });
+const std::string Map::FILE_FORMAT_NAME("Build Engine Map");
+
 Map::Map(const std::string & filePath)
 	: GameFile(filePath)
 	, m_version(DEFAULT_VERSION) { }
@@ -125,6 +128,14 @@ Map & Map::operator = (const Map & map) {
 }
 
 Map::~Map() { }
+
+const std::vector<std::string> & Map::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & Map::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 uint32_t Map::getVersion() const {
 	return m_version;

@@ -26,6 +26,7 @@
 
 namespace WXUtilities {
 
+	extern const std::string FILE_DIALOG_ALL_FILES;
 	wxPoint createWXPoint(const Point2D & point);
 	Point2D createPoint(const wxPoint & point);
 	wxSize createWXSize(const Dimension & dimension);
@@ -42,6 +43,9 @@ namespace WXUtilities {
 	wxLogLevel spdLogLevelToWXLogLevel(spdlog::level::level_enum logLevel);
 	spdlog::level::level_enum wxLogLevelToSPDLogLevel(wxLogLevel logLevel);
 	std::string logLevelToString(wxLogLevel logLevel);
+	void showInfoMessage(const std::string & message, const std::string & title, wxWindow * parent = nullptr);
+	void showWarningMessage(const std::string & message, const std::string & title, wxWindow * parent = nullptr);
+	void showErrorMessage(const std::string & message, const std::string & title, wxWindow * parent = nullptr);
 
 	template <typename E>
 	wxArrayString createEnumWXArrayString(const std::vector<E> & disabledEnumValues) {

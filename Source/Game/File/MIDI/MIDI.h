@@ -35,6 +35,8 @@ public:
 	static std::unique_ptr<MIDI> loadFrom(const std::string & filePath);
 
 	// GameFile Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
 	Endianness getEndianness() const override;
@@ -43,6 +45,9 @@ public:
 
 	bool operator == (const MIDI & midi) const;
 	bool operator != (const MIDI & midi) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static constexpr Endianness ENDIANNESS = Endianness::BigEndian;
 

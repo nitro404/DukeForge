@@ -19,12 +19,17 @@ public:
 	static std::unique_ptr<GroupGRP> loadFrom(const std::string & filePath);
 
 	// Group Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	Endianness getEndianness() const override;
 	size_t getSizeInBytes() const override;
 
 	bool operator == (const GroupGRP & group) const;
 	bool operator != (const GroupGRP & group) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static constexpr Endianness ENDIANNESS = Endianness::LittleEndian;
 	static inline const std::string HEADER_TEXT = "KenSilverman";

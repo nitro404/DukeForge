@@ -105,16 +105,24 @@ set(GUI_SOURCE_FILES
 	GUI/DukeForgeApplication.cpp
 	GUI/DukeForgeFrame.h
 	GUI/DukeForgeFrame.cpp
-	GUI/Group/GroupEditorPanel.h
-	GUI/Group/GroupEditorPanel.cpp
-	GUI/Group/GroupPanel.h
-	GUI/Group/GroupPanel.cpp
-	GUI/Group/SSI/SunstormInteractiveMetadataPanel.h
-	GUI/Group/SSI/SunstormInteractiveMetadataPanel.cpp
+	GUI/Game/File/GameFilePanel.h
+	GUI/Game/File/GameFilePanel.cpp
+	GUI/Game/File/GameFilePanelFactoryRegistry.h
+	GUI/Game/File/GameFilePanelFactoryRegistry.cpp
+	GUI/Game/File/Group/GroupPanel.h
+	GUI/Game/File/Group/GroupPanel.cpp
+	GUI/Game/File/Group/GRP/GroupPanelGRP.h
+	GUI/Game/File/Group/GRP/GroupPanelGRP.cpp
+	GUI/Game/File/Group/SSI/GroupPanelSSI.h
+	GUI/Game/File/Group/SSI/GroupPanelSSI.cpp
+	GUI/Game/File/Group/SSI/SunstormInteractiveMetadataPanel.h
+	GUI/Game/File/Group/SSI/SunstormInteractiveMetadataPanel.cpp
 	GUI/Hyperlink.h
 	GUI/Hyperlink.cpp
 	GUI/MetadataPanel.h
 	GUI/MetadataPanel.cpp
+	GUI/Project/ProjectPanel.h
+	GUI/Project/ProjectPanel.cpp
 	GUI/Releases/ReleaseNotesPanel.h
 	GUI/Releases/ReleaseNotesPanel.cpp
 	GUI/SettingPanel.h

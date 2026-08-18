@@ -1,33 +1,29 @@
 #include "GroupPanel.h"
 
-#include "../MetadataPanel.h"
-#include "../WXUtilities.h"
 #include "Game/File/GameFile.h"
 #include "Game/File/GameFileFactoryRegistry.h"
 #include "Game/File/Group/Group.h"
 #include "Game/File/Group/GroupFile.h"
-#include "Game/File/Group/SSI/GroupSSI.h"
+#include "GUI/MetadataPanel.h"
+#include "GUI/WXUtilities.h"
 
 #include <Utilities/FileUtilities.h>
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
-#include <wx/gbsizer.h>
 #include <wx/wrapsizer.h>
 
 GroupPanel::GroupPanel(std::unique_ptr<Group> group, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style)
-	: wxPanel(parent, windowID, position, size, style, "Group Information")
-	, m_group(std::move(group))
+	: GameFilePanel(std::move(group), parent, windowID, position, size, style, "Group")
+	, m_groupPropertiesSizer(nullptr)
+	, m_groupInfoSizer(nullptr)
 	, m_numberOfFilesText(nullptr)
 	, m_groupSizeText(nullptr)
 	, m_fileExtensionsText(nullptr)
 	, m_fileListBox(nullptr)
 	, m_fileInfoBox(nullptr)
 	, m_fileInfoPanel(nullptr)
-	, m_ssiMetadataBox(nullptr)
-	, m_ssiMetadataPanel(nullptr)
-	, m_fileInfoBoxSizer(nullptr)
-	, m_groupPropertiesSizer(nullptr) {
+	, m_fileInfoBoxSizer(nullptr) {
 	wxPanel * groupPropertiesPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxPanel * numberOfFilesPropertyPanel = new wxPanel(groupPropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -58,16 +54,7 @@ GroupPanel::GroupPanel(std::unique_ptr<Group> group, wxWindow * parent, wxWindow
 	m_fileInfoPanel = new MetadataPanel(m_fileInfoBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxNO_BORDER, "File Info");
 	m_fileInfoPanel->Hide();
 
-	std::shared_ptr<GroupSSI> groupSSI(std::dynamic_pointer_cast<GroupSSI>(m_group));
-
-	if(groupSSI != nullptr) {
-		m_ssiMetadataBox = new wxStaticBox(this, wxID_ANY, "Sunstorm Interactive File Metadata", wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-		m_ssiMetadataBox->SetOwnFont(m_ssiMetadataBox->GetFont().MakeBold());
-
-		m_ssiMetadataPanel = new SunstormInteractiveMetadataPanel(groupSSI, m_ssiMetadataBox);
-	}
-
-	int border = 5;
+	const int border = 5;
 
 	wxFlexGridSizer * numberOfFilesPropertySizer = new wxFlexGridSizer(2, 3, 3);
 	numberOfFilesPropertySizer->Add(numberOfFilesLabel, 0, wxALIGN_CENTER_VERTICAL, border);
@@ -94,25 +81,16 @@ GroupPanel::GroupPanel(std::unique_ptr<Group> group, wxWindow * parent, wxWindow
 	m_groupPropertiesSizer->Add(fileExtensionsPropertyPanel, 0, 0, border);
 	groupPropertiesPanel->SetSizer(m_groupPropertiesSizer);
 
-	wxGridBagSizer * groupInfoSizer = new wxGridBagSizer(border, border);
-	groupInfoSizer->Add(groupPropertiesPanel, wxGBPosition(0, 0), wxGBSpan(1, 2), wxEXPAND | wxHORIZONTAL, border);
-	groupInfoSizer->Add(m_fileListBox, wxGBPosition(1, 0), wxGBSpan(1, 1), wxEXPAND | wxALL, border);
-	groupInfoSizer->Add(m_fileInfoBox, wxGBPosition(1, 1), wxGBSpan(1, 1), wxEXPAND | wxALL, border);
-	groupInfoSizer->AddGrowableRow(1, 1);
-	groupInfoSizer->AddGrowableCol(1, 1);
+	m_groupInfoSizer = new wxGridBagSizer(border, border);
+	m_groupInfoSizer->Add(groupPropertiesPanel, wxGBPosition(0, 0), wxGBSpan(1, 2), wxEXPAND | wxHORIZONTAL, border);
+	m_groupInfoSizer->Add(m_fileListBox, wxGBPosition(1, 0), wxGBSpan(1, 1), wxEXPAND | wxALL, border);
+	m_groupInfoSizer->Add(m_fileInfoBox, wxGBPosition(1, 1), wxGBSpan(1, 1), wxEXPAND | wxALL, border);
+	m_groupInfoSizer->AddGrowableRow(1, 1);
+	m_groupInfoSizer->AddGrowableCol(1, 1);
 
-	if(m_ssiMetadataPanel != nullptr) {
-		wxBoxSizer * ssiMetadataBoxSizer = new wxBoxSizer(wxHORIZONTAL);
-		ssiMetadataBoxSizer->Add(m_ssiMetadataPanel, 1, wxEXPAND | wxALL, 20);
-		m_ssiMetadataBox->SetSizer(ssiMetadataBoxSizer);
+	SetSizer(m_groupInfoSizer);
 
-		groupInfoSizer->Add(m_ssiMetadataBox, wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND | wxHORIZONTAL, border);
-		groupInfoSizer->AddGrowableRow(2, 0);
-	}
-
-	SetSizer(groupInfoSizer);
-
-	m_groupModifiedConnection = m_group->modified.connect(std::bind(&GroupPanel::onGroupModified, this, std::placeholders::_1));
+	m_groupModifiedConnection = getGameFile()->modified.connect(std::bind(&GroupPanel::onGroupModified, this, std::placeholders::_1));
 
 	update();
 }
@@ -122,17 +100,17 @@ GroupPanel::~GroupPanel() {
 }
 
 std::string GroupPanel::getPanelName() const {
-	std::string_view fileName(m_group->getFileName());
+	std::string_view fileName(getGameFile()->getFileName());
 
-	return fileName.empty() ? fmt::format("NEW {} GROUP *", std::dynamic_pointer_cast<GroupSSI>(m_group) != nullptr ? "SSI" : "GRP") : fmt::format("{}{}", fileName, m_group->isModified() ? " *" : "");
+	return fileName.empty() ? fmt::format("NEW {} GROUP *", getGameFile()->getDefaultFileFormatExtension()) : fmt::format("{}{}", fileName, getGameFile()->isModified() ? " *" : "");
 }
 
-const Group * GroupPanel::getGroup() const {
-	return m_group.get();
+std::shared_ptr<const Group> GroupPanel::getGroup() const {
+	return std::dynamic_pointer_cast<const Group>(getGameFile());
 }
 
-Group * GroupPanel::getGroup() {
-	return m_group.get();
+std::shared_ptr<Group> GroupPanel::getGroup() {
+	return std::dynamic_pointer_cast<Group>(getGameFile());
 }
 
 size_t GroupPanel::numberOfFilesSelected() const {
@@ -144,6 +122,12 @@ size_t GroupPanel::numberOfFilesSelected() const {
 }
 
 std::vector<std::shared_ptr<GroupFile>> GroupPanel::getSelectedFiles() const {
+	std::shared_ptr<const Group> group(getGroup());
+	
+	if(group == nullptr) {
+		return {};
+	}
+
 	wxArrayInt selections;
 
 	m_fileListBox->GetSelections(selections);
@@ -151,7 +135,7 @@ std::vector<std::shared_ptr<GroupFile>> GroupPanel::getSelectedFiles() const {
 	std::vector<std::shared_ptr<GroupFile>> selectedFiles;
 
 	for(size_t i = 0; i < selections.GetCount(); i++) {
-		selectedFiles.push_back(m_group->getFile(selections[i]));
+		selectedFiles.push_back(group->getFile(selections[i]));
 	}
 
 	return selectedFiles;
@@ -182,16 +166,22 @@ size_t GroupPanel::extractSelectedFiles(const std::string & directoryPath) const
 }
 
 void GroupPanel::update() {
-	m_numberOfFilesText->SetLabel(std::to_string(m_group->numberOfFiles()));
-	m_groupSizeText->SetLabel(Utilities::fileSizeToString(m_group->getSizeInBytes()));
+	std::shared_ptr<const Group> group(getGroup());
 
-	std::string fileExtensions(m_group->getFileExtensionsAsString());
+	if(group == nullptr) {
+		return;
+	}
+
+	m_numberOfFilesText->SetLabel(std::to_string(group->numberOfFiles()));
+	m_groupSizeText->SetLabel(Utilities::fileSizeToString(group->getSizeInBytes()));
+
+	std::string fileExtensions(group->getFileExtensionsAsString());
 
 	m_fileExtensionsText->SetLabel(fileExtensions.empty() ? "None" : fileExtensions);
 
 	wxArrayString fileNames;
-	fileNames.Alloc(m_group->numberOfFiles());
-	const std::vector<std::shared_ptr<GroupFile>> & groupFiles = m_group->getFiles();
+	fileNames.Alloc(group->numberOfFiles());
+	const std::vector<std::shared_ptr<GroupFile>> & groupFiles = group->getFiles();
 
 	for(size_t i = 0; i < groupFiles.size(); i++) {
 		fileNames.Add(fmt::format("{}. {}", i + 1, groupFiles[i]->getFileName()));
@@ -205,6 +195,12 @@ void GroupPanel::update() {
 }
 
 void GroupPanel::updateFileInfo() {
+	std::shared_ptr<const Group> group(getGroup());
+
+	if(group == nullptr) {
+		return;
+	}
+
 	wxArrayInt selections;
 
 	m_fileListBox->GetSelections(selections);
@@ -216,7 +212,7 @@ void GroupPanel::updateFileInfo() {
 	else if(selections.GetCount() == 1) {
 		int selectedFileIndex = selections[0];
 
-		std::shared_ptr<GroupFile> selectedFile(m_group->getFile(selectedFileIndex));
+		std::shared_ptr<GroupFile> selectedFile(group->getFile(selectedFileIndex));
 
 		std::unique_ptr<GameFile> gameFile(GameFileFactoryRegistry::getInstance()->readGameFileFrom(selectedFile->getData(), selectedFile->getFileName()));
 
@@ -253,5 +249,5 @@ void GroupPanel::onFileSelected(wxCommandEvent & event) {
 void GroupPanel::onGroupModified(const GameFile & group) {
 	update();
 
-	groupModified(*this);
+	gameFileModified(*this);
 }

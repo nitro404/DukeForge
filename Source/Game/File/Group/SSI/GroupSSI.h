@@ -49,6 +49,8 @@ public:
 	static bool isValidVersion(uint32_t version);
 
 	// Group Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
 	Endianness getEndianness() const override;
@@ -57,6 +59,9 @@ public:
 
 	bool operator == (const GroupSSI & group) const;
 	bool operator != (const GroupSSI & group) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static constexpr Endianness ENDIANNESS = Endianness::LittleEndian;
 	static constexpr uint32_t DEFAULT_VERSION = 2;

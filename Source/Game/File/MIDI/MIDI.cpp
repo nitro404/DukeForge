@@ -16,6 +16,9 @@
 #include <jdksmidi/utils.h>
 #include <spdlog/spdlog.h>
 
+const std::vector<std::string> MIDI::FILE_FORMAT_EXTENSIONS({ "MID", "MIDI" });
+const std::string MIDI::FILE_FORMAT_NAME("Musical Instrument Digital Interface Song");
+
 MIDI::MIDI(const std::string & filePath)
 	: GameFile(filePath)
 	, m_division(0) { }
@@ -56,6 +59,14 @@ MIDI & MIDI::operator = (const MIDI & midi) {
 }
 
 MIDI::~MIDI() { }
+
+const std::vector<std::string> & MIDI::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & MIDI::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 std::chrono::milliseconds MIDI::getDuration() const {
 	return std::chrono::milliseconds(static_cast<int64_t>(jdksmidi::GetMusicDurationInSeconds(*m_tracks) * 1000.0));

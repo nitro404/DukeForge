@@ -12,6 +12,9 @@
 #include <limits>
 #include <regex>
 
+const std::vector<std::string> PaletteCSS::FILE_FORMAT_EXTENSIONS({ "CSS" });
+const std::string PaletteCSS::FILE_FORMAT_NAME("Cascading StyleSheet Palette");
+
 PaletteCSS::PaletteCSS(Format format, std::string_view comment, const std::string & filePath)
 	: Palette(filePath)
 	, m_format(format)
@@ -71,6 +74,14 @@ PaletteCSS & PaletteCSS::operator = (const PaletteCSS & palette) {
 }
 
 PaletteCSS::~PaletteCSS() { }
+
+const std::vector<std::string> & PaletteCSS::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & PaletteCSS::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 PaletteCSS::Format PaletteCSS::getFormat() const {
 	return m_format;

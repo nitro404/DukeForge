@@ -19,8 +19,10 @@ public:
 	virtual ~GameFileFactoryRegistry();
 
 	bool hasFactory(const std::string & fileNameOrExtension) const;
-	bool setFactory(const std::string & fileNameOrExtension, std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction, std::function<std::unique_ptr<GameFile>(const ByteBuffer & data)> readGameFileFunction, std::function<std::unique_ptr<GameFile>(const std::string & filePath)> loadGameFileFunction);
-	size_t setFactory(const std::vector<std::string> & fileNamesOrExtensions, std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction, std::function<std::unique_ptr<GameFile>(const ByteBuffer & data)> readGameFileFunction, std::function<std::unique_ptr<GameFile>(const std::string & filePath)> loadGameFileFunction);
+	std::string getFactoryName(const std::string & fileNameOrExtension) const;
+	std::vector<std::string> getFactoryFileExtensions() const;
+	bool setFactory(const std::string & fileNameOrExtension, const std::string & name, std::type_index gameFileType, std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction, std::function<std::unique_ptr<GameFile>(const ByteBuffer & data)> readGameFileFunction, std::function<std::unique_ptr<GameFile>(const std::string & filePath)> loadGameFileFunction);
+	size_t setFactory(const std::vector<std::string> & fileNamesOrExtensions, const std::string & name, std::type_index gameFileType, std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction, std::function<std::unique_ptr<GameFile>(const ByteBuffer & data)> readGameFileFunction, std::function<std::unique_ptr<GameFile>(const std::string & filePath)> loadGameFileFunction);
 	bool removeFactory(const std::string & fileNameOrExtension);
 	void resetFactories();
 	bool areDefaultFactoriesAssigned() const;
@@ -32,6 +34,8 @@ public:
 
 private:
 	struct GameFileFactoryData {
+		std::string name;
+		std::type_index gameFileType;
 		std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction;
 		std::function<std::unique_ptr<GameFile>(const ByteBuffer & /* data */)> readGameFileFunction;
 		std::function<std::unique_ptr<GameFile>(const std::string /* filePath */)> loadGameFileFunction;

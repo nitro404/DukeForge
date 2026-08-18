@@ -17,6 +17,8 @@ public:
 	static std::unique_ptr<PaletteTXT> loadFrom(const std::string & filePath);
 
 	// Palette Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	Endianness getEndianness() const override;
@@ -24,6 +26,9 @@ public:
 
 	bool operator == (const PaletteTXT & palette) const;
 	bool operator != (const PaletteTXT & palette) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 private:
 	void updateParent();

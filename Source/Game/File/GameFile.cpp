@@ -42,6 +42,16 @@ GameFile & GameFile::operator = (const GameFile & gameFile) {
 
 GameFile::~GameFile() { }
 
+const std::string & GameFile::getDefaultFileFormatExtension() const {
+	const std::vector<std::string> & fileFormatExtensions = getFileFormatExtensions();
+
+	if(fileFormatExtensions.empty()) {
+		return Utilities::emptyString;
+	}
+
+	return fileFormatExtensions.front();
+}
+
 bool GameFile::hasFilePath() const {
 	return !m_filePath.empty();
 }
@@ -127,4 +137,9 @@ std::vector<std::pair<std::string, std::string>> GameFile::getMetadata() const {
 	addMetadata(metadata);
 
 	return metadata;
+}
+
+bool GameFile::isValid(const GameFile * gameFile, bool verifyParent) {
+	return gameFile != nullptr &&
+		   gameFile->isValid();
 }

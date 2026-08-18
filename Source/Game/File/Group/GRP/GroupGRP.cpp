@@ -7,6 +7,9 @@
 
 #include <filesystem>
 
+const std::vector<std::string> GroupGRP::FILE_FORMAT_EXTENSIONS({ "GRP" });
+const std::string GroupGRP::FILE_FORMAT_NAME("Build Engine Group");
+
 GroupGRP::GroupGRP(const std::string & filePath)
 	: Group(filePath) { }
 
@@ -34,6 +37,14 @@ GroupGRP & GroupGRP::operator = (const GroupGRP & group) {
 }
 
 GroupGRP::~GroupGRP() { }
+
+const std::vector<std::string> & GroupGRP::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & GroupGRP::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 std::unique_ptr<GroupGRP> GroupGRP::readFrom(const ByteBuffer & byteBuffer) {
 	byteBuffer.setEndianness(ENDIANNESS);

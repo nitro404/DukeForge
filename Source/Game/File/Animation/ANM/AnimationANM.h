@@ -153,6 +153,8 @@ public:
 	static bool isValidBitmapType(uint8_t bitmapType);
 
 	// Animation Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	uint16_t getFrameWidth() const override;
 	uint16_t getFrameHeight() const override;
 	uint32_t numberOfFrames() const override;
@@ -166,6 +168,9 @@ public:
 
 	bool operator == (const AnimationANM & animation) const;
 	bool operator != (const AnimationANM & animation) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static constexpr Endianness ENDIANNESS = Endianness::LittleEndian;
 	static inline const std::string IDENTIFIER = "LPF "; // large page file

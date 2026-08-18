@@ -7,6 +7,9 @@
 #include <CSSColorParser/css_color.hpp>
 #include <spdlog/spdlog.h>
 
+const std::vector<std::string> PaletteTXT::FILE_FORMAT_EXTENSIONS({ "TXT" });
+const std::string PaletteTXT::FILE_FORMAT_NAME("Plaintext Palette");
+
 PaletteTXT::PaletteTXT(const std::string & filePath)
 	: Palette(filePath)
 	, m_colourTable(std::make_shared<ColourTable>()) {
@@ -54,6 +57,14 @@ PaletteTXT & PaletteTXT::operator = (const PaletteTXT & palette) {
 }
 
 PaletteTXT::~PaletteTXT() { }
+
+const std::vector<std::string> & PaletteTXT::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & PaletteTXT::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 std::shared_ptr<ColourTable> PaletteTXT::getColourTable(uint8_t colourTableIndex) const {
 	if(colourTableIndex != 0) {

@@ -7,6 +7,9 @@
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
+const std::vector<std::string> PaletteJASC::FILE_FORMAT_EXTENSIONS({ "JASC" });
+const std::string PaletteJASC::FILE_FORMAT_NAME("Paint Shop Pro Palette");
+
 PaletteJASC::PaletteJASC(const std::string & filePath)
 	: Palette(filePath)
 	, m_colourTable(std::make_shared<ColourTable>())
@@ -60,6 +63,14 @@ PaletteJASC & PaletteJASC::operator = (const PaletteJASC & palette) {
 }
 
 PaletteJASC::~PaletteJASC() { }
+
+const std::vector<std::string> & PaletteJASC::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & PaletteJASC::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 const std::string & PaletteJASC::getVersion() const {
 	return m_version;

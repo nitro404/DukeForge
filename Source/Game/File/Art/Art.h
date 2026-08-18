@@ -80,6 +80,8 @@ public:
 	static bool isValid(const Art * art, bool verifyParent = true);
 
 	// GameFile Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	bool saveTo(const std::string & filePath, bool overwrite = true) const override;
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
@@ -89,6 +91,9 @@ public:
 
 	bool operator == (const Art & art) const;
 	bool operator != (const Art & art) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static constexpr Endianness ENDIANNESS = Endianness::LittleEndian;
 	static constexpr uint32_t DEFAULT_VERSION = 1;

@@ -61,9 +61,10 @@ public:
 	bool addFile(const std::string & filePath, bool replace = DEFAULT_REPLACE_FILES);
 	bool addFile(std::unique_ptr<GroupFile> file, bool replace = DEFAULT_REPLACE_FILES);
 	bool addFile(const GroupFile & file, bool replace = DEFAULT_REPLACE_FILES);
-	bool addFiles(const std::vector<std::string> & filesPaths, bool replace = DEFAULT_REPLACE_FILES);
-	bool addFiles(const std::vector<std::shared_ptr<GroupFile>> & files, bool replace = DEFAULT_REPLACE_FILES);
-	bool addFiles(const Group & group, bool replace = DEFAULT_REPLACE_FILES);
+	size_t addFiles(const std::vector<std::string> & filesPaths, bool replace = DEFAULT_REPLACE_FILES);
+	size_t addFiles(std::vector<std::unique_ptr<GroupFile>> && files, bool replace = DEFAULT_REPLACE_FILES);
+	size_t addFiles(const std::vector<std::shared_ptr<GroupFile>> & files, bool replace = DEFAULT_REPLACE_FILES);
+	size_t addFiles(const Group & group, bool replace = DEFAULT_REPLACE_FILES);
 	bool renameFile(size_t index, const std::string & newFileName);
 	bool renameFile(const GroupFile & file, const std::string & newFileName);
 	bool renameFile(const std::string & oldFileName, const std::string & newFileName);

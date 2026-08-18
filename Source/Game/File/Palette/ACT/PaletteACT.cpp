@@ -4,6 +4,9 @@
 
 #include <spdlog/spdlog.h>
 
+const std::vector<std::string> PaletteACT::FILE_FORMAT_EXTENSIONS({ "ACT" });
+const std::string PaletteACT::FILE_FORMAT_NAME("Adobe Photoshop Palette");
+
 PaletteACT::PaletteACT(const std::string & filePath)
 	: Palette(filePath)
 	, m_colourTable(std::make_shared<ColourTable>()) {
@@ -51,6 +54,14 @@ PaletteACT & PaletteACT::operator = (const PaletteACT & palette) {
 }
 
 PaletteACT::~PaletteACT() { }
+
+const std::vector<std::string> & PaletteACT::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & PaletteACT::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 std::shared_ptr<ColourTable> PaletteACT::getColourTable(uint8_t colourTableIndex) const {
 	if(colourTableIndex != 0) {

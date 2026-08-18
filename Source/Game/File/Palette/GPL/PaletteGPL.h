@@ -48,6 +48,8 @@ public:
 	static std::unique_ptr<PaletteGPL> loadFrom(const std::string & filePath);
 
 	// Palette Virtuals
+	const std::vector<std::string> & getFileFormatExtensions() const override;
+	const std::string & getFileFormatName() const override;
 	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
@@ -56,6 +58,9 @@ public:
 
 	bool operator == (const PaletteGPL & palette) const;
 	bool operator != (const PaletteGPL & palette) const;
+
+	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
+	static const std::string FILE_FORMAT_NAME;
 
 	static inline const std::string MAGIC = "GIMP Palette";
 	static constexpr size_t MAGIC_SIZE_BYTES = 12;

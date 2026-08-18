@@ -21,6 +21,10 @@
 #include <Utilities/FileUtilities.h>
 #include <Utilities/StringUtilities.h>
 
+#include <spdlog/spdlog.h>
+
+#include <ranges>
+
 GameFileFactoryRegistry::GameFileFactoryRegistry()
 	: m_defaultFactoriesAssigned(false) {
 	assignDefaultFactories();
@@ -34,7 +38,30 @@ bool GameFileFactoryRegistry::hasFactory(const std::string & fileNameOrExtension
 	return m_gameFileFactories.find(GameFileFactoryRegistry::formatFileNameOrExtension(fileNameOrExtension)) != m_gameFileFactories.cend();
 }
 
-bool GameFileFactoryRegistry::setFactory(const std::string & fileNameOrExtension, std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction, std::function<std::unique_ptr<GameFile>(const ByteBuffer & data)> readGameFileFunction, std::function<std::unique_ptr<GameFile>(const std::string & filePath)> loadGameFileFunction) {
+std::string GameFileFactoryRegistry::getFactoryName(const std::string & fileNameOrExtension) const {
+	std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+	GameFileFactoryMap::const_iterator gameFileFactoryIterator(m_gameFileFactories.find(GameFileFactoryRegistry::formatFileNameOrExtension(fileNameOrExtension)));
+
+	if(gameFileFactoryIterator == m_gameFileFactories.cend()) {
+		return {};
+	}
+
+	return gameFileFactoryIterator->second.name;
+}
+
+std::vector<std::string> GameFileFactoryRegistry::getFactoryFileExtensions() const {
+	std::vector<std::string> factoryFileExtensions;
+	factoryFileExtensions.reserve(factoryFileExtensions.size());
+
+	for(const std::string & fileExtension : std::views::keys(m_gameFileFactories)) {
+		factoryFileExtensions.push_back(fileExtension);
+	}
+
+	return factoryFileExtensions;
+}
+
+bool GameFileFactoryRegistry::setFactory(const std::string & fileNameOrExtension, const std::string & name, std::type_index gameFileType, std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction, std::function<std::unique_ptr<GameFile>(const ByteBuffer & data)> readGameFileFunction, std::function<std::unique_ptr<GameFile>(const std::string & filePath)> loadGameFileFunction) {
 	std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 	if(fileNameOrExtension.empty() || createNewGameFileFunction == nullptr || readGameFileFunction == nullptr || loadGameFileFunction == nullptr) {
@@ -48,6 +75,8 @@ bool GameFileFactoryRegistry::setFactory(const std::string & fileNameOrExtension
 	}
 
 	m_gameFileFactories.emplace(formattedFileNameOrExtension, GameFileFactoryData({
+		name,
+		gameFileType,
 		createNewGameFileFunction,
 		readGameFileFunction,
 		loadGameFileFunction
@@ -56,13 +85,13 @@ bool GameFileFactoryRegistry::setFactory(const std::string & fileNameOrExtension
 	return true;
 }
 
-size_t GameFileFactoryRegistry::setFactory(const std::vector<std::string> & fileNamesOrExtensions, std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction, std::function<std::unique_ptr<GameFile>(const ByteBuffer & data)> readGameFileFunction, std::function<std::unique_ptr<GameFile>(const std::string & filePath)> loadGameFileFunction) {
+size_t GameFileFactoryRegistry::setFactory(const std::vector<std::string> & fileNamesOrExtensions, const std::string & name, std::type_index gameFileType, std::function<std::unique_ptr<GameFile>()> createNewGameFileFunction, std::function<std::unique_ptr<GameFile>(const ByteBuffer & data)> readGameFileFunction, std::function<std::unique_ptr<GameFile>(const std::string & filePath)> loadGameFileFunction) {
 	std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 	size_t numberOfFactoriesSet = 0;
 
 	for(const std::string & fileNameOrExtension : fileNamesOrExtensions) {
-		if(setFactory(fileNameOrExtension, createNewGameFileFunction, readGameFileFunction, loadGameFileFunction)) {
+		if(setFactory(fileNameOrExtension, name, gameFileType, createNewGameFileFunction, readGameFileFunction, loadGameFileFunction)) {
 			numberOfFactoriesSet++;
 		}
 	}
@@ -109,7 +138,7 @@ bool GameFileFactoryRegistry::areDefaultFactoriesAssigned() const {
 void GameFileFactoryRegistry::assignDefaultFactories() {
 	std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-	setFactory("act", []() {
+	setFactory(PaletteACT::FILE_FORMAT_EXTENSIONS, PaletteACT::FILE_FORMAT_NAME, std::type_index(typeid(PaletteACT)), []() {
 		return std::make_unique<PaletteACT>();
 	}, [](const ByteBuffer & data) {
 		return PaletteACT::readFrom(data);
@@ -117,7 +146,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return PaletteACT::loadFrom(filePath);
 	});
 
-	setFactory("anm", []() {
+	setFactory(AnimationANM::FILE_FORMAT_EXTENSIONS, AnimationANM::FILE_FORMAT_NAME, std::type_index(typeid(AnimationANM)), []() {
 		return std::make_unique<AnimationANM>();
 	}, [](const ByteBuffer & data) {
 		return AnimationANM::readFrom(data);
@@ -125,7 +154,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return AnimationANM::loadFrom(filePath);
 	});
 
-	setFactory("art", []() {
+	setFactory(Art::FILE_FORMAT_EXTENSIONS, Art::FILE_FORMAT_NAME, std::type_index(typeid(Art)), []() {
 		return std::make_unique<Art>();
 	}, [](const ByteBuffer & data) {
 		return Art::readFrom(data);
@@ -133,7 +162,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return Art::loadFrom(filePath);
 	});
 
-	setFactory("css", []() {
+	setFactory(PaletteCSS::FILE_FORMAT_EXTENSIONS, PaletteCSS::FILE_FORMAT_NAME, std::type_index(typeid(PaletteCSS)), []() {
 		return std::make_unique<PaletteCSS>();
 	}, [](const ByteBuffer & data) {
 		return PaletteCSS::readFrom(data);
@@ -141,7 +170,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return PaletteCSS::loadFrom(filePath);
 	});
 
-	setFactory("dat", []() {
+	setFactory(PaletteDAT::FILE_FORMAT_EXTENSIONS, PaletteDAT::FILE_FORMAT_NAME, std::type_index(typeid(PaletteDAT)), []() {
 		return std::make_unique<PaletteDAT>(PaletteDAT::Type::Palette);
 	}, [](const ByteBuffer & data) {
 		return PaletteDAT::readFrom(data);
@@ -149,7 +178,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return PaletteDAT::loadFrom(filePath);
 	});
 
-	setFactory("gpl", []() {
+	setFactory(PaletteGPL::FILE_FORMAT_EXTENSIONS, PaletteGPL::FILE_FORMAT_NAME, std::type_index(typeid(PaletteGPL)), []() {
 		return std::make_unique<PaletteGPL>();
 	}, [](const ByteBuffer & data) {
 		return PaletteGPL::readFrom(data);
@@ -157,7 +186,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return PaletteGPL::loadFrom(filePath);
 	});
 
-	setFactory("grp", []() {
+	setFactory(GroupGRP::FILE_FORMAT_EXTENSIONS, GroupGRP::FILE_FORMAT_NAME, std::type_index(typeid(GroupGRP)), []() {
 		return std::make_unique<GroupGRP>();
 	}, [](const ByteBuffer & data) {
 		return GroupGRP::readFrom(data);
@@ -165,7 +194,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return GroupGRP::loadFrom(filePath);
 	});
 
-	setFactory("jasc", []() {
+	setFactory(PaletteJASC::FILE_FORMAT_EXTENSIONS, PaletteJASC::FILE_FORMAT_NAME, std::type_index(typeid(PaletteJASC)), []() {
 		return std::make_unique<PaletteJASC>();
 	}, [](const ByteBuffer & data) {
 		return PaletteJASC::readFrom(data);
@@ -173,7 +202,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return PaletteJASC::loadFrom(filePath);
 	});
 
-	setFactory("kpl", []() {
+	setFactory(PaletteKPL::FILE_FORMAT_EXTENSIONS, PaletteKPL::FILE_FORMAT_NAME, std::type_index(typeid(PaletteKPL)), []() {
 		return std::make_unique<PaletteKPL>();
 	}, [](const ByteBuffer & data) {
 		return PaletteKPL::readFrom(data);
@@ -181,7 +210,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return PaletteKPL::loadFrom(filePath);
 	});
 
-	setFactory("map", []() {
+	setFactory(Map::FILE_FORMAT_EXTENSIONS, Map::FILE_FORMAT_NAME, std::type_index(typeid(Map)), []() {
 		return std::make_unique<Map>();
 	}, [](const ByteBuffer & data) {
 		return Map::readFrom(data);
@@ -189,7 +218,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return Map::loadFrom(filePath);
 	});
 
-	setFactory(std::vector<std::string>({ "mid", "midi" }), []() {
+	setFactory(MIDI::FILE_FORMAT_EXTENSIONS, MIDI::FILE_FORMAT_NAME, std::type_index(typeid(MIDI)), []() {
 		return std::make_unique<MIDI>();
 	}, [](const ByteBuffer & data) {
 		return MIDI::readFrom(data);
@@ -197,7 +226,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return MIDI::loadFrom(filePath);
 	});
 
-	setFactory("pal", []() {
+	setFactory(PalettePAL::FILE_FORMAT_EXTENSIONS, PalettePAL::FILE_FORMAT_NAME, std::type_index(typeid(PalettePAL)), []() {
 		return std::make_unique<PalettePAL>();
 	}, [](const ByteBuffer & data) {
 		return PalettePAL::readFrom(data);
@@ -205,7 +234,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return PalettePAL::loadFrom(filePath);
 	});
 
-	setFactory("ssi", []() {
+	setFactory(GroupSSI::FILE_FORMAT_EXTENSIONS, GroupSSI::FILE_FORMAT_NAME, std::type_index(typeid(GroupSSI)), []() {
 		return std::make_unique<GroupSSI>();
 	}, [](const ByteBuffer & data) {
 		return GroupSSI::readFrom(data);
@@ -213,7 +242,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return GroupSSI::loadFrom(filePath);
 	});
 
-	setFactory("txt", []() {
+	setFactory(PaletteTXT::FILE_FORMAT_EXTENSIONS, PaletteTXT::FILE_FORMAT_NAME, std::type_index(typeid(PaletteTXT)), []() {
 		return std::make_unique<PaletteTXT>();
 	}, [](const ByteBuffer & data) {
 		return PaletteTXT::readFrom(data);
@@ -221,7 +250,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return PaletteTXT::loadFrom(filePath);
 	});
 
-	setFactory("voc", []() {
+	setFactory(SoundVOC::FILE_FORMAT_EXTENSIONS, SoundVOC::FILE_FORMAT_NAME, std::type_index(typeid(SoundVOC)), []() {
 		return std::make_unique<SoundVOC>(SoundVOC::SubType::PCMUnsigned8Bit, 8000, 2);
 	}, [](const ByteBuffer & data) {
 		return SoundVOC::readFrom(data);
@@ -229,7 +258,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return SoundVOC::loadFrom(filePath);
 	});
 
-	setFactory("wav", []() {
+	setFactory(SoundWAV::FILE_FORMAT_EXTENSIONS, SoundWAV::FILE_FORMAT_NAME, std::type_index(typeid(SoundWAV)), []() {
 		return std::make_unique<SoundWAV>(SoundWAV::SubType::PCMUnsigned8Bit, 8000, 2);
 	}, [](const ByteBuffer & data) {
 		return SoundWAV::readFrom(data);
@@ -237,7 +266,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 		return SoundWAV::loadFrom(filePath);
 	});
 
-	setFactory("zip", []() {
+	setFactory(Zip::FILE_FORMAT_EXTENSIONS, Zip::FILE_FORMAT_NAME, std::type_index(typeid(Zip)), []() {
 		return std::make_unique<Zip>();
 	}, [](const ByteBuffer & data) {
 		return Zip::readFrom(data);
@@ -252,6 +281,7 @@ std::unique_ptr<GameFile> GameFileFactoryRegistry::createNewGameFile(const std::
 	GameFileFactoryMap::const_iterator gameFileFactoryIterator(getGameFileFactoryForFilePath(filePathOrExtension));
 
 	if(gameFileFactoryIterator == m_gameFileFactories.cend()) {
+		spdlog::debug("Could not find game file factory for '{}'.");
 		return nullptr;
 	}
 
@@ -264,6 +294,7 @@ std::unique_ptr<GameFile> GameFileFactoryRegistry::readGameFileFrom(const ByteBu
 	GameFileFactoryMap::const_iterator gameFileFactoryIterator(getGameFileFactoryForFilePath(filePathOrExtension));
 
 	if(gameFileFactoryIterator == m_gameFileFactories.cend()) {
+		spdlog::debug("Could not find game file factory for '{}'.");
 		return nullptr;
 	}
 
@@ -276,6 +307,7 @@ std::unique_ptr<GameFile> GameFileFactoryRegistry::loadGameFileFrom(const std::s
 	GameFileFactoryMap::const_iterator gameFileFactoryIterator(getGameFileFactoryForFilePath(filePath));
 
 	if(gameFileFactoryIterator == m_gameFileFactories.cend()) {
+		spdlog::debug("Could not find game file factory for '{}'.");
 		return nullptr;
 	}
 

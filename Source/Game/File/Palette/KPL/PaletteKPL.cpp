@@ -11,9 +11,6 @@
 
 #include <sstream>
 
-const std::string PaletteKPL::MIME_TYPE("application/x-krita-palette");
-const std::string PaletteKPL::COLOR_SET_VERSION("1.0");
-
 static const std::string KRITAL_PALETTE_MIME_TYPE_FILE_NAME("mimetype");
 static const std::string KRITAL_PALETTE_COLOR_SET_FILE_NAME("colorset.xml");
 
@@ -49,6 +46,12 @@ static const std::array<const std::string *, 2> KRITA_PALETTE_POSITION_ATTRIBUTE
 	&KRITA_PALETTE_POSITION_COLUMN_ATTRIBUTE_NAME,
 	&KRITA_PALETTE_POSITION_ROW_ATTRIBUTE_NAME
 };
+
+const std::vector<std::string> PaletteKPL::FILE_FORMAT_EXTENSIONS({ "KPL" });
+const std::string PaletteKPL::FILE_FORMAT_NAME("Krita Palette");
+
+const std::string PaletteKPL::MIME_TYPE("application/x-krita-palette");
+const std::string PaletteKPL::COLOR_SET_VERSION("1.0");
 
 PaletteKPL::PaletteKPL(std::string_view comment, uint8_t numberOfColumns, bool readOnly, std::unique_ptr<ZipArchive> archive, const std::string & filePath)
 	: Palette(filePath)
@@ -138,6 +141,14 @@ PaletteKPL & PaletteKPL::operator = (const PaletteKPL & palette) {
 
 PaletteKPL::~PaletteKPL() {
 	m_colourTableModifiedConnection.disconnect();
+}
+
+const std::vector<std::string> & PaletteKPL::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & PaletteKPL::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
 }
 
 void PaletteKPL::setModified(bool modified) const {

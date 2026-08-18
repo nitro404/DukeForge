@@ -2,6 +2,9 @@
 
 #include <spdlog/spdlog.h>
 
+const std::vector<std::string> SoundVOC::FILE_FORMAT_EXTENSIONS({ "VOC" });
+const std::string SoundVOC::FILE_FORMAT_NAME("Creative Voice Audio");
+
 SoundVOC::SoundVOC(SubType subType, uint32_t sampleRate, uint16_t numberOfChannels, const std::string & filePath)
 	: Sound(getFormatForSubType(subType), sampleRate, numberOfChannels) { }
 
@@ -20,6 +23,14 @@ SoundVOC & SoundVOC::operator = (SoundVOC && sound) noexcept {
 }
 
 SoundVOC::~SoundVOC() { }
+
+const std::vector<std::string> & SoundVOC::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & SoundVOC::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 std::unique_ptr<SoundVOC> SoundVOC::readFrom(const ByteBuffer & byteBuffer) {
 	std::unique_ptr<ByteBuffer> data(std::make_unique<ByteBuffer>(byteBuffer));

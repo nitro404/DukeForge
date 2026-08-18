@@ -6,6 +6,9 @@
 #include <magic_enum/magic_enum.hpp>
 #include <spdlog/spdlog.h>
 
+const std::vector<std::string> PalettePAL::FILE_FORMAT_EXTENSIONS({ "PAL" });
+const std::string PalettePAL::FILE_FORMAT_NAME("Microsoft Palette");
+
 PalettePAL::PalettePAL(const std::string & filePath)
 	: Palette(filePath)
 	, m_version(PAL_VERSION)
@@ -74,6 +77,14 @@ PalettePAL & PalettePAL::operator = (const PalettePAL & palette) {
 }
 
 PalettePAL::~PalettePAL() { }
+
+const std::vector<std::string> & PalettePAL::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & PalettePAL::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 uint16_t PalettePAL::getVersion() const {
 	return m_version;

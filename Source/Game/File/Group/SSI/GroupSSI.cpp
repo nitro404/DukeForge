@@ -7,6 +7,9 @@
 
 #include <filesystem>
 
+const std::vector<std::string> GroupSSI::FILE_FORMAT_EXTENSIONS({ "SSI" });
+const std::string GroupSSI::FILE_FORMAT_NAME("Sunstorm Interactive File Collection");
+
 GroupSSI::GroupSSI(uint32_t version, const std::string & filePath)
 	: Group(filePath)
 	, m_version(version) { }
@@ -65,6 +68,14 @@ GroupSSI & GroupSSI::operator = (const GroupSSI & group) {
 }
 
 GroupSSI::~GroupSSI() { }
+
+const std::vector<std::string> & GroupSSI::getFileFormatExtensions() const {
+	return FILE_FORMAT_EXTENSIONS;
+}
+
+const std::string & GroupSSI::getFileFormatName() const {
+	return FILE_FORMAT_NAME;
+}
 
 uint32_t GroupSSI::getVersion() const {
 	return m_version;
