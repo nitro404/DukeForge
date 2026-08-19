@@ -68,7 +68,7 @@ DukeForgeFrame::DukeForgeFrame()
 	gameFileMenu->Append(m_closeGameFileMenuItem);
 	m_closeAllGameFilesMenuItem = new wxMenuItem(gameFileMenu, wxID_CLOSE_ALL, "Close All Files", "Closes all open game files", wxITEM_NORMAL);
 	gameFileMenu->Append(m_closeAllGameFilesMenuItem);
-	m_exitMenuItem = new wxMenuItem(gameFileMenu, wxID_EXIT, "E&xit\tCtrl-X", "Close the application", wxITEM_NORMAL);
+	m_exitMenuItem = new wxMenuItem(gameFileMenu, wxID_EXIT, "E&xit", "Close the application", wxITEM_NORMAL);
 	gameFileMenu->Append(m_exitMenuItem);
 	gameFileMenu->Bind(wxEVT_MENU, &DukeForgeFrame::onGameFileMenuItemPressed, this);
 
