@@ -90,14 +90,10 @@ GroupPanel::GroupPanel(std::unique_ptr<Group> group, wxWindow * parent, wxWindow
 
 	SetSizer(m_groupInfoSizer);
 
-	m_groupModifiedConnection = getGameFile()->modified.connect(std::bind(&GroupPanel::onGroupModified, this, std::placeholders::_1));
-
 	update();
 }
 
-GroupPanel::~GroupPanel() {
-	m_groupModifiedConnection.disconnect();
-}
+GroupPanel::~GroupPanel() { }
 
 std::string GroupPanel::getPanelName() const {
 	std::string_view fileName(getGameFile()->getFileName());
@@ -244,10 +240,4 @@ void GroupPanel::updateFileInfo() {
 void GroupPanel::onFileSelected(wxCommandEvent & event) {
 	updateFileInfo();
 	groupFileSelectionChanged(*this);
-}
-
-void GroupPanel::onGroupModified(const GameFile & group) {
-	update();
-
-	gameFileModified(*this);
 }

@@ -10,9 +10,13 @@
 
 GameFilePanel::GameFilePanel(std::shared_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style, const std::string & name)
 	: wxPanel(parent, windowID, position, size, style, name)
-	, m_gameFile(gameFile) { }
+	, m_gameFile(gameFile) {
+	m_gameFileModifiedConnection = m_gameFile->modified.connect(std::bind(&GameFilePanel::onGameFileModified, this, std::placeholders::_1));
+}
 
-GameFilePanel::~GameFilePanel() { }
+GameFilePanel::~GameFilePanel() {
+	m_gameFileModifiedConnection.disconnect();
+}
 
 std::shared_ptr<const GameFile> GameFilePanel::getGameFile() const {
 	return m_gameFile;
@@ -24,4 +28,10 @@ std::shared_ptr<GameFile> GameFilePanel::getGameFile() {
 
 bool GameFilePanel::isModified() const {
 	return m_gameFile->isModified();
+}
+
+void GameFilePanel::onGameFileModified(const GameFile & gameFile) {
+	update();
+
+	gameFileModified(*this);
 }

@@ -23,11 +23,15 @@ public:
 	std::shared_ptr<const GameFile> getGameFile() const;
 	std::shared_ptr<GameFile> getGameFile();
 	bool isModified() const;
+	virtual void update() = 0;
 
 	boost::signals2::signal<void (GameFilePanel & /* gameFilePanel*/)> gameFileModified;
 
 private:
+	void onGameFileModified(const GameFile & gameFile);
+
 	std::shared_ptr<GameFile> m_gameFile;
+	boost::signals2::connection m_gameFileModifiedConnection;
 
 	GameFilePanel(const GameFilePanel &) = delete;
 	const GameFilePanel & operator = (const GameFilePanel &) = delete;

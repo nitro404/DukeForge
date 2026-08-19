@@ -32,7 +32,7 @@ public:
 	std::vector<std::shared_ptr<GroupFile>> getSelectedFiles() const;
 	size_t getTotalSizeOfSelectedFiles() const;
 	size_t extractSelectedFiles(const std::string & directoryPath) const;
-	void update();
+	void update() override;
 	void updateFileInfo();
 
 	// GameFilePanel Virtuals
@@ -46,9 +46,7 @@ protected:
 
 private:
 	void onFileSelected(wxCommandEvent & event);
-	void onGroupModified(const GameFile & group);
 
-	boost::signals2::connection m_groupModifiedConnection;
 	wxStaticText * m_numberOfFilesText;
 	wxStaticText * m_groupSizeText;
 	wxStaticText * m_fileExtensionsText;
