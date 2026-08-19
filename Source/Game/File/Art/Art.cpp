@@ -834,6 +834,8 @@ std::unique_ptr<Art> Art::loadFromArt(const std::string & filePath) {
 		return nullptr;
 	}
 
+	art->setFilePath(filePath);
+
 	return art;
 }
 
@@ -850,6 +852,8 @@ std::unique_ptr<Art> Art::loadFromJSON(const std::string & filePath) {
 		spdlog::error("Failed to parse art from JSON file: '{}'.", filePath);
 		return nullptr;
 	}
+
+	art->setFilePath(filePath);
 
 	return art;
 }

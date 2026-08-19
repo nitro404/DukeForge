@@ -167,6 +167,8 @@ std::unique_ptr<PaletteACT> PaletteACT::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
+	palette->setFilePath(filePath);
+
 	return palette;
 }
 

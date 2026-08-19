@@ -92,7 +92,10 @@ std::unique_ptr<Zip> Zip::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
-	return std::make_unique<Zip>(std::move(zipArchive));
+	std::unique_ptr<Zip> zip(std::make_unique<Zip>(std::move(zipArchive)));
+	zip->setFilePath(filePath);
+
+	return zip;
 }
 
 bool Zip::writeTo(ByteBuffer & byteBuffer) const {

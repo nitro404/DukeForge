@@ -220,6 +220,8 @@ std::unique_ptr<PaletteCSS> PaletteCSS::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
+	palette->setFilePath(filePath);
+
 	return palette;
 }
 

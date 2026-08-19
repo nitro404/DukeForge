@@ -510,6 +510,8 @@ std::unique_ptr<PaletteGPL> PaletteGPL::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
+	palette->setFilePath(filePath);
+
 	return palette;
 }
 

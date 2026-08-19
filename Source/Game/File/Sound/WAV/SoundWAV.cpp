@@ -57,7 +57,10 @@ std::unique_ptr<SoundWAV> SoundWAV::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
-	return std::make_unique<SoundWAV>(std::move(fileHandle), std::move(soundFileInfo));
+	std::unique_ptr<SoundWAV> sound(std::make_unique<SoundWAV>(std::move(fileHandle), std::move(soundFileInfo)));
+	sound->setFilePath(filePath);
+
+	return sound;
 }
 
 Endianness SoundWAV::getEndianness() const {

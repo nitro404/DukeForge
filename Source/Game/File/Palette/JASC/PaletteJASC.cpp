@@ -226,6 +226,8 @@ std::unique_ptr<PaletteJASC> PaletteJASC::loadFrom(const std::string & filePath)
 		return nullptr;
 	}
 
+	palette->setFilePath(filePath);
+
 	return palette;
 }
 

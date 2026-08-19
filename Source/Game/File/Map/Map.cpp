@@ -717,6 +717,8 @@ std::unique_ptr<Map> Map::loadFromMap(const std::string & filePath) {
 		return nullptr;
 	}
 
+	map->setFilePath(filePath);
+
 	return map;
 }
 
@@ -733,6 +735,8 @@ std::unique_ptr<Map> Map::loadFromJSON(const std::string & filePath) {
 		spdlog::error("Failed to parse map from JSON file: '{}'.", filePath);
 		return nullptr;
 	}
+
+	map->setFilePath(filePath);
 
 	return map;
 }

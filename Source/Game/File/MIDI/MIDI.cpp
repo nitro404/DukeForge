@@ -110,7 +110,15 @@ std::unique_ptr<MIDI> MIDI::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
-	return readFrom(fileReadStream);
+	std::unique_ptr<MIDI> midi(readFrom(fileReadStream));
+
+	if(midi == nullptr)  {
+		return nullptr;
+	}
+
+	midi->setFilePath(filePath);
+
+	return midi;
 }
 
 std::unique_ptr<MIDI> MIDI::readFrom(jdksmidi::MIDIFileReadStream & readStream) {

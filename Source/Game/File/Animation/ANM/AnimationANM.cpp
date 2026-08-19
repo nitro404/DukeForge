@@ -608,6 +608,8 @@ std::unique_ptr<AnimationANM> AnimationANM::loadFrom(const std::string & filePat
 		return nullptr;
 	}
 
+	animation->setFilePath(filePath);
+
 	return animation;
 }
 

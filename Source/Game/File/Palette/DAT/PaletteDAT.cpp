@@ -634,6 +634,8 @@ std::unique_ptr<PaletteDAT> PaletteDAT::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
+	palette->setFilePath(filePath);
+
 	return palette;
 }
 

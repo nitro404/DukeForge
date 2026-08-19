@@ -121,6 +121,8 @@ std::unique_ptr<PaletteTXT> PaletteTXT::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
+	palette->setFilePath(filePath);
+
 	return palette;
 }
 

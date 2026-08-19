@@ -242,6 +242,8 @@ std::unique_ptr<PalettePAL> PalettePAL::loadFrom(const std::string & filePath) {
 		return nullptr;
 	}
 
+	palette->setFilePath(filePath);
+
 	return palette;
 }
 
