@@ -46,7 +46,6 @@ ProjectPanel::ProjectPanel(wxWindow * parent, wxWindowID windowID, const wxPoint
 
 ProjectPanel::~ProjectPanel() { }
 
-
 std::string ProjectPanel::getPanelName() const {
 	return "New Project";
 }
@@ -988,6 +987,7 @@ bool ProjectPanel::closeGameFilePanel(size_t gameFilePanelIndex) {
 	GameFilePanel * gameFilePanel = getGameFilePanel(gameFilePanelIndex);
 	m_notebook->RemovePage(gameFilePanelIndex);
 	delete gameFilePanel;
+	m_notebook->Refresh();
 
 	if(gameFilePanelIndex == currentGameFilePanelIndex) {
 		activeGameFilePanelChanged(*this, getCurrentGameFilePanel());

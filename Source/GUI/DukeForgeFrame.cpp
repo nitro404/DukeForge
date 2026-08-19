@@ -341,6 +341,7 @@ bool DukeForgeFrame::closeProjectPanel(size_t projectPanelIndex) {
 
 	m_notebook->RemovePage(projectPanelIndex);
 	delete projectPanel;
+	m_notebook->Refresh();
 
 	if(projectPanelIndex == currentProjectPanelIndex) {
 		activeProjectPanelChanged(getCurrentProjectPanel());
