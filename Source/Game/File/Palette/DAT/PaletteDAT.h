@@ -3,6 +3,8 @@
 
 #include "../Palette.h"
 
+#include <ByteBuffer.h>
+
 #include <array>
 
 class PaletteDAT final : public Palette {
@@ -33,6 +35,7 @@ public:
 		void setData(std::unique_ptr<ShadeData> shadeData);
 		void setData(const ShadeData & shadeData);
 		bool setData(const std::vector<uint8_t> & shadeData);
+		bool isModified() const;
 
 		static std::unique_ptr<ShadeTable> getFrom(const ByteBuffer & byteBuffer, size_t offset);
 		static std::unique_ptr<ShadeTable> readFrom(const ByteBuffer & byteBuffer);
@@ -48,12 +51,18 @@ public:
 		bool operator == (const ShadeTable & shadeTable) const;
 		bool operator != (const ShadeTable & shadeTable) const;
 
+		boost::signals2::signal<void (const ShadeTable & /* shadeTable */)> modified;
+
+	protected:
+		virtual void setModified(bool modified) const;
+
 	private:
 		void setParent(Palette * palette);
 		void clearParent();
 
 		std::unique_ptr<ShadeData> m_shadeData;
 		Palette * m_parent;
+		mutable bool m_modified;
 	};
 
 	class TranslucencyTable final {
@@ -75,6 +84,7 @@ public:
 		void setData(std::unique_ptr<TranslucencyData> translucencyData);
 		void setData(const TranslucencyData & translucencyData);
 		bool setData(const std::vector<uint8_t> & translucencyData);
+		bool isModified() const;
 
 		static std::unique_ptr<TranslucencyTable> getFrom(const ByteBuffer & byteBuffer, size_t offset);
 		static std::unique_ptr<TranslucencyTable> readFrom(const ByteBuffer & byteBuffer);
@@ -90,12 +100,18 @@ public:
 		bool operator == (const TranslucencyTable & translucencyTable) const;
 		bool operator != (const TranslucencyTable & translucencyTable) const;
 
+		boost::signals2::signal<void (const TranslucencyTable & /* translucencyTable */)> modified;
+
+	protected:
+		virtual void setModified(bool modified) const;
+
 	private:
 		void setParent(Palette * palette);
 		void clearParent();
 
 		std::unique_ptr<TranslucencyData> m_translucencyData;
 		Palette * m_parent;
+		mutable bool m_modified;
 	};
 
 	class SwapTable final {
@@ -119,6 +135,7 @@ public:
 		void setData(std::unique_ptr<SwapData> swapData);
 		void setData(const SwapData & swapData);
 		bool setData(const std::vector<uint8_t> & swapData);
+		bool isModified() const;
 
 		static std::unique_ptr<SwapTable> getFrom(const ByteBuffer & byteBuffer, size_t offset);
 		static std::unique_ptr<SwapTable> readFrom(const ByteBuffer & byteBuffer);
@@ -134,6 +151,11 @@ public:
 		bool operator == (const SwapTable & swapTable) const;
 		bool operator != (const SwapTable & swapTable) const;
 
+		boost::signals2::signal<void (const SwapTable & /* swapTable */)> modified;
+
+	protected:
+		virtual void setModified(bool modified) const;
+
 	private:
 		void setParent(Palette * palette);
 		void clearParent();
@@ -141,6 +163,7 @@ public:
 		uint8_t m_swapIndex;
 		std::unique_ptr<SwapData> m_swapData;
 		Palette * m_parent;
+		mutable bool m_modified;
 	};
 
 	PaletteDAT(Type type, const std::string & filePath = {});
@@ -215,6 +238,10 @@ public:
 	static constexpr uint8_t BYTES_PER_COLOUR = 3;
 	static constexpr uint8_t COLOUR_SCALE = 4;
 
+protected:
+	// Palette Virtruals
+	void setModified(bool modified) const override;
+
 private:
 	static std::unique_ptr<PaletteDAT> readPaletteFrom(const ByteBuffer & byteBuffer);
 	static std::unique_ptr<PaletteDAT> readLookupFrom(const ByteBuffer & byteBuffer);
@@ -222,6 +249,10 @@ private:
 	bool writeLookupTo(ByteBuffer & byteBuffer) const;
 	static bool writeDownscaledColourTableTo(const ColourTable & colourTable, ByteBuffer & byteBuffer);
 	static void upscaleColourTable(ColourTable & colourTable);
+	void onShadeTableModified(const ShadeTable & shadeTable);
+	void onTranslucencyTableModified(const TranslucencyTable & translucencyTable);
+	void onSwapTableModified(const SwapTable & swapTable);
+	void connectSignals();
 	void updateParent();
 
 	Type m_type;
@@ -230,6 +261,9 @@ private:
 	std::shared_ptr<TranslucencyTable> m_translucencyTable;
 	std::vector<std::shared_ptr<SwapTable>> m_swapTables;
 	std::unique_ptr<ByteBuffer> m_trailingData;
+	std::vector<boost::signals2::connection> m_shadeTableModifiedConnections;
+	boost::signals2::connection m_translucencyTableModifiedConnection;
+	std::vector<boost::signals2::connection> m_swapTableModifiedConnections;
 };
 
 #endif // _PALETTE_DAT_H_

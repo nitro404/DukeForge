@@ -124,7 +124,7 @@ protected:
 	void setModified(bool modified) const override;
 
 	std::vector<std::shared_ptr<GroupFile>> m_files;
-	std::vector<boost::signals2::connection> m_fileConnections;
+	std::vector<boost::signals2::connection> m_fileModifiedConnections;
 };
 
 template <typename ...Arguments, typename>

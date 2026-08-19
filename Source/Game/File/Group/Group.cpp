@@ -50,11 +50,11 @@ Group & Group::operator = (Group && g) noexcept {
 
 		m_files = std::move(g.m_files);
 
-		for(boost::signals2::connection & fileConnections : m_fileConnections) {
-			fileConnections.disconnect();
+		for(boost::signals2::connection & fileModifiedConnection : m_fileModifiedConnections) {
+			fileModifiedConnection.disconnect();
 		}
 
-		m_fileConnections.clear();
+		m_fileModifiedConnections.clear();
 
 		updateParent();
 		connectSignals();
@@ -68,11 +68,11 @@ Group & Group::operator = (const Group & g) {
 
 	m_files.clear();
 
-	for(boost::signals2::connection & fileConnections : m_fileConnections) {
-		fileConnections.disconnect();
+	for(boost::signals2::connection & fileModifiedConnection : m_fileModifiedConnections) {
+		fileModifiedConnection.disconnect();
 	}
 
-	m_fileConnections.clear();
+	m_fileModifiedConnections.clear();
 
 	for(std::vector<std::shared_ptr<GroupFile>>::const_iterator i = g.m_files.cbegin(); i != g.m_files.cend(); ++i) {
 		m_files.push_back(std::make_shared<GroupFile>(**i));
@@ -85,8 +85,8 @@ Group & Group::operator = (const Group & g) {
 }
 
 Group::~Group() {
-	for(boost::signals2::connection & fileConnections : m_fileConnections) {
-		fileConnections.disconnect();
+	for(boost::signals2::connection & fileModifiedConnection : m_fileModifiedConnections) {
+		fileModifiedConnection.disconnect();
 	}
 
 	for(std::shared_ptr<GroupFile> & file : m_files) {
@@ -333,7 +333,7 @@ bool Group::addFile(std::unique_ptr<GroupFile> file, bool replace) {
 	if(fileIndex == std::numeric_limits<size_t>::max()) {
 		m_files.emplace_back(std::move(file));
 		m_files.back()->m_parentGroup = this;
-		m_fileConnections.push_back(m_files.back()->modified.connect(std::bind(&Group::onGroupFileModified, this, std::placeholders::_1)));
+		m_fileModifiedConnections.push_back(m_files.back()->modified.connect(std::bind(&Group::onGroupFileModified, this, std::placeholders::_1)));
 
 		setModified(true);
 
@@ -343,8 +343,8 @@ bool Group::addFile(std::unique_ptr<GroupFile> file, bool replace) {
 		if(replace) {
 			m_files[fileIndex] = std::move(file);
 			m_files[fileIndex]->m_parentGroup = this;
-			m_fileConnections[fileIndex].disconnect();
-			m_fileConnections[fileIndex] = m_files[fileIndex]->modified.connect(std::bind(&Group::onGroupFileModified, this, std::placeholders::_1));
+			m_fileModifiedConnections[fileIndex].disconnect();
+			m_fileModifiedConnections[fileIndex] = m_files[fileIndex]->modified.connect(std::bind(&Group::onGroupFileModified, this, std::placeholders::_1));
 
 			setModified(true);
 
@@ -670,8 +670,8 @@ bool Group::removeFile(size_t index) {
 		return false;
 	}
 
-	m_fileConnections[index].disconnect();
-	m_fileConnections.erase(m_fileConnections.cbegin() + index);
+	m_fileModifiedConnections[index].disconnect();
+	m_fileModifiedConnections.erase(m_fileModifiedConnections.cbegin() + index);
 	m_files[index]->m_parentGroup = nullptr;
 	m_files.erase(m_files.cbegin() + index);
 
@@ -724,15 +724,15 @@ size_t Group::removeFilesByName(const std::vector<std::string> & fileNames) {
 }
 
 void Group::clearFiles() {
-	for(boost::signals2::connection & fileConnection : m_fileConnections) {
-		fileConnection.disconnect();
+	for(boost::signals2::connection & fileModifiedConnection : m_fileModifiedConnections) {
+		fileModifiedConnection.disconnect();
 	}
 
 	for(std::shared_ptr<GroupFile> & file : m_files) {
 		file->m_parentGroup = nullptr;
 	}
 
-	m_fileConnections.clear();
+	m_fileModifiedConnections.clear();
 	m_files.clear();
 
 	setModified(true);
@@ -818,7 +818,7 @@ void Group::addMetadata(std::vector<std::pair<std::string, std::string>> & metad
 
 void Group::connectSignals() {
 	for(std::shared_ptr<GroupFile> & file : m_files) {
-		m_fileConnections.push_back(file->modified.connect(std::bind(&Group::onGroupFileModified, this, std::placeholders::_1)));
+		m_fileModifiedConnections.push_back(file->modified.connect(std::bind(&Group::onGroupFileModified, this, std::placeholders::_1)));
 	}
 }
 

@@ -7,32 +7,39 @@
 PaletteDAT::SwapTable::SwapTable(Palette * parent)
 	: m_swapIndex(0)
 	, m_swapData(std::make_unique<SwapData>())
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::SwapTable::SwapTable(std::unique_ptr<SwapData> swapData, uint8_t swapIndex, Palette * parent)
 	: m_swapIndex(swapIndex)
 	, m_swapData(std::move(swapData))
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::SwapTable::SwapTable(const SwapData & swapData, uint8_t swapIndex, Palette * parent)
 	: m_swapIndex(swapIndex)
 	, m_swapData(std::make_unique<SwapData>(swapData))
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::SwapTable::SwapTable(SwapTable && swapTable) noexcept
 	: m_swapIndex(swapTable.m_swapIndex)
 	, m_swapData(std::move(swapTable.m_swapData))
-	, m_parent(nullptr) { }
+	, m_parent(nullptr)
+	, m_modified(false) { }
 
 PaletteDAT::SwapTable::SwapTable(const SwapTable & swapTable)
 	: m_swapIndex(swapTable.m_swapIndex)
 	, m_swapData(std::make_unique<SwapData>(*swapTable.m_swapData))
-	, m_parent(nullptr) { }
+	, m_parent(nullptr)
+	, m_modified(false) { }
 
 PaletteDAT::SwapTable & PaletteDAT::SwapTable::operator = (SwapTable && swapTable) noexcept {
 	if(this != &swapTable) {
 		m_swapIndex = swapTable.m_swapIndex;
 		m_swapData = std::move(swapTable.m_swapData);
+
+		setModified(true);
 	}
 
 	return *this;
@@ -41,6 +48,8 @@ PaletteDAT::SwapTable & PaletteDAT::SwapTable::operator = (SwapTable && swapTabl
 PaletteDAT::SwapTable & PaletteDAT::SwapTable::operator = (const SwapTable & swapTable) {
 	m_swapIndex = swapTable.m_swapIndex;
 	m_swapData = std::make_unique<SwapData>(*swapTable.m_swapData);
+
+	setModified(true);
 
 	return *this;
 }
@@ -52,7 +61,13 @@ uint8_t PaletteDAT::SwapTable::getSwapIndex() const {
 }
 
 void PaletteDAT::SwapTable::setSwapIndex(uint8_t swapIndex) {
+	if(m_swapIndex == swapIndex) {
+		return;
+	}
+
 	m_swapIndex = swapIndex;
+
+	setModified(true);
 }
 
 const PaletteDAT::SwapTable::SwapData & PaletteDAT::SwapTable::getData() const {
@@ -61,10 +76,14 @@ const PaletteDAT::SwapTable::SwapData & PaletteDAT::SwapTable::getData() const {
 
 void PaletteDAT::SwapTable::setData(std::unique_ptr<SwapData> swapData) {
 	m_swapData = std::move(swapData);
+
+	setModified(true);
 }
 
 void PaletteDAT::SwapTable::setData(const SwapData & swapData) {
 	m_swapData = std::make_unique<SwapData>(swapData);
+
+	setModified(true);
 }
 
 bool PaletteDAT::SwapTable::setData(const std::vector<uint8_t> & swapData) {
@@ -74,7 +93,19 @@ bool PaletteDAT::SwapTable::setData(const std::vector<uint8_t> & swapData) {
 
 	std::copy_n(std::make_move_iterator(swapData.begin()), ColourTable::NUMBER_OF_COLOURS, m_swapData->begin());
 
+	setModified(true);
+
 	return true;
+}
+
+bool PaletteDAT::SwapTable::isModified() const {
+	return m_modified;
+}
+
+void PaletteDAT::SwapTable::setModified(bool value) const {
+	m_modified = value;
+
+	modified(*this);
 }
 
 std::unique_ptr<PaletteDAT::SwapTable> PaletteDAT::SwapTable::getFrom(const ByteBuffer & byteBuffer, size_t offset) {

@@ -50,6 +50,16 @@ public:
 
 protected:
 	Palette(const std::string & filePath = {});
+
+	// GameFile Virtruals
+	void setModified(bool modified) const override;
+
+private:
+	void onColourTableModified(ColourTable & colourTable);
+	void connectSignals();
+	void updateParent();
+
+	std::vector<boost::signals2::connection> m_colourTableConnections;
 };
 
 #endif // _PALETTE_H_

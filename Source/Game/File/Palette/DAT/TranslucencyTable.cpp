@@ -6,27 +6,34 @@
 
 PaletteDAT::TranslucencyTable::TranslucencyTable(Palette * parent)
 	: m_translucencyData(std::make_unique<TranslucencyData>())
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::TranslucencyTable::TranslucencyTable(std::unique_ptr<TranslucencyData> translucencyData, Palette * parent)
 	: m_translucencyData(std::move(translucencyData))
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::TranslucencyTable::TranslucencyTable(const TranslucencyData & translucencyData, Palette * parent)
 	: m_translucencyData(std::make_unique<TranslucencyData>(translucencyData))
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::TranslucencyTable::TranslucencyTable(TranslucencyTable && translucencyTable) noexcept
 	: m_translucencyData(std::move(translucencyTable.m_translucencyData))
-	, m_parent(nullptr) { }
+	, m_parent(nullptr)
+	, m_modified(false) { }
 
 PaletteDAT::TranslucencyTable::TranslucencyTable(const TranslucencyTable & translucencyTable)
 	: m_translucencyData(std::make_unique<TranslucencyData>(*translucencyTable.m_translucencyData))
-	, m_parent(nullptr) { }
+	, m_parent(nullptr)
+	, m_modified(false) { }
 
 PaletteDAT::TranslucencyTable & PaletteDAT::TranslucencyTable::operator = (TranslucencyTable && translucencyTable) noexcept {
 	if(this != &translucencyTable) {
 		m_translucencyData = std::move(translucencyTable.m_translucencyData);
+
+		setModified(true);
 	}
 
 	return *this;
@@ -34,6 +41,8 @@ PaletteDAT::TranslucencyTable & PaletteDAT::TranslucencyTable::operator = (Trans
 
 PaletteDAT::TranslucencyTable & PaletteDAT::TranslucencyTable::operator = (const TranslucencyTable & translucencyTable) {
 	m_translucencyData = std::make_unique<TranslucencyData>(*translucencyTable.m_translucencyData);
+
+	setModified(true);
 
 	return *this;
 }
@@ -46,10 +55,14 @@ const PaletteDAT::TranslucencyTable::TranslucencyData & PaletteDAT::Translucency
 
 void PaletteDAT::TranslucencyTable::setData(std::unique_ptr<TranslucencyData> translucencyData) {
 	m_translucencyData = std::move(translucencyData);
+
+	setModified(true);
 }
 
 void PaletteDAT::TranslucencyTable::setData(const TranslucencyData & translucencyData) {
 	m_translucencyData = std::make_unique<TranslucencyData>(translucencyData);
+
+	setModified(true);
 }
 
 bool PaletteDAT::TranslucencyTable::setData(const std::vector<uint8_t> & translucencyData) {
@@ -59,7 +72,19 @@ bool PaletteDAT::TranslucencyTable::setData(const std::vector<uint8_t> & translu
 
 	std::copy_n(std::make_move_iterator(translucencyData.begin()), TRANSLUCENCY_TABLE_SIZE_BYTES, m_translucencyData->begin());
 
+	setModified(true);
+
 	return true;
+}
+
+bool PaletteDAT::TranslucencyTable::isModified() const {
+	return m_modified;
+}
+
+void PaletteDAT::TranslucencyTable::setModified(bool value) const {
+	m_modified = value;
+
+	modified(*this);
 }
 
 std::unique_ptr<PaletteDAT::TranslucencyTable> PaletteDAT::TranslucencyTable::getFrom(const ByteBuffer & byteBuffer, size_t offset) {

@@ -6,27 +6,34 @@
 
 PaletteDAT::ShadeTable::ShadeTable(Palette * parent)
 	: m_shadeData(std::make_unique<ShadeData>())
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::ShadeTable::ShadeTable(std::unique_ptr<ShadeData> shadeData, Palette * parent)
 	: m_shadeData(std::move(shadeData))
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::ShadeTable::ShadeTable(const ShadeData & shadeData, Palette * parent)
 	: m_shadeData(std::make_unique<ShadeData>(shadeData))
-	, m_parent(parent) { }
+	, m_parent(parent)
+	, m_modified(false) { }
 
 PaletteDAT::ShadeTable::ShadeTable(ShadeTable && shadeTable) noexcept
 	: m_shadeData(std::move(shadeTable.m_shadeData))
-	, m_parent(nullptr) { }
+	, m_parent(nullptr)
+	, m_modified(false) { }
 
 PaletteDAT::ShadeTable::ShadeTable(const ShadeTable & shadeTable)
 	: m_shadeData(std::make_unique<ShadeData>(*shadeTable.m_shadeData))
-	, m_parent(nullptr) { }
+	, m_parent(nullptr)
+	, m_modified(false) { }
 
 PaletteDAT::ShadeTable & PaletteDAT::ShadeTable::operator = (ShadeTable && shadeTable) noexcept {
 	if(this != &shadeTable) {
 		m_shadeData = std::move(shadeTable.m_shadeData);
+
+		setModified(true);
 	}
 
 	return *this;
@@ -34,6 +41,8 @@ PaletteDAT::ShadeTable & PaletteDAT::ShadeTable::operator = (ShadeTable && shade
 
 PaletteDAT::ShadeTable & PaletteDAT::ShadeTable::operator = (const ShadeTable & shadeTable) {
 	m_shadeData = std::make_unique<ShadeData>(*shadeTable.m_shadeData);
+
+	setModified(true);
 
 	return *this;
 }
@@ -46,10 +55,14 @@ const PaletteDAT::ShadeTable::ShadeData & PaletteDAT::ShadeTable::getData() cons
 
 void PaletteDAT::ShadeTable::setData(std::unique_ptr<ShadeData> shadeData) {
 	m_shadeData = std::move(shadeData);
+
+	setModified(true);
 }
 
 void PaletteDAT::ShadeTable::setData(const ShadeData & shadeData) {
 	m_shadeData = std::make_unique<ShadeData>(shadeData);
+
+	setModified(true);
 }
 
 bool PaletteDAT::ShadeTable::setData(const std::vector<uint8_t> & shadeData) {
@@ -59,7 +72,19 @@ bool PaletteDAT::ShadeTable::setData(const std::vector<uint8_t> & shadeData) {
 
 	std::copy_n(std::make_move_iterator(shadeData.begin()), ColourTable::NUMBER_OF_COLOURS, m_shadeData->begin());
 
+	setModified(true);
+
 	return true;
+}
+
+bool PaletteDAT::ShadeTable::isModified() const {
+	return m_modified;
+}
+
+void PaletteDAT::ShadeTable::setModified(bool value) const {
+	m_modified = value;
+
+	modified(*this);
 }
 
 std::unique_ptr<PaletteDAT::ShadeTable> PaletteDAT::ShadeTable::getFrom(const ByteBuffer & byteBuffer, size_t offset) {

@@ -16,14 +16,29 @@ Palette::Palette(const std::string & filePath)
 	: GameFile(filePath) { }
 
 Palette::Palette(Palette && palette) noexcept
-	: GameFile(std::move(palette)) { }
+	: GameFile(std::move(palette)) {
+	updateParent();
+	connectSignals();
+}
 
 Palette::Palette(const Palette & palette)
-	: GameFile(palette) { }
+	: GameFile(palette) {
+	updateParent();
+	connectSignals();
+}
 
 Palette & Palette::operator = (Palette && palette) noexcept {
 	if(this != &palette) {
 		GameFile::operator = (std::move(palette));
+
+		for(boost::signals2::connection & colourTableConnection : m_colourTableConnections) {
+			colourTableConnection.disconnect();
+		}
+
+		m_colourTableConnections.clear();
+
+		updateParent();
+		connectSignals();
 	}
 
 	return *this;
@@ -32,10 +47,29 @@ Palette & Palette::operator = (Palette && palette) noexcept {
 Palette & Palette::operator = (const Palette & palette) {
 	GameFile::operator = (palette);
 
+	for(boost::signals2::connection & colourTableConnection : m_colourTableConnections) {
+		colourTableConnection.disconnect();
+	}
+
+	m_colourTableConnections.clear();
+
+	updateParent();
+	connectSignals();
+
 	return *this;
 }
 
-Palette::~Palette() { }
+Palette::~Palette() {
+	for(boost::signals2::connection & colourTableConnection : m_colourTableConnections) {
+		colourTableConnection.disconnect();
+	}
+
+	std::vector<std::shared_ptr<ColourTable>> colourTables(getAllColourTables());
+
+	for(std::shared_ptr<ColourTable> & colourTable : colourTables) {
+		colourTable->clearParent();
+	}
+}
 
 bool Palette::hasTransparentColourIndex(uint8_t colourTableIndex) const {
 	std::shared_ptr<ColourTable> colourTable(getColourTable(colourTableIndex));
@@ -284,6 +318,28 @@ void Palette::addMetadata(std::vector<std::pair<std::string, std::string>> & met
 	}
 }
 
+void Palette::onColourTableModified(ColourTable & colourTable) {
+	if(colourTable.isModified()) {
+		setModified(true);
+	}
+}
+
+void Palette::connectSignals() {
+	std::vector<std::shared_ptr<ColourTable>> colourTables(getAllColourTables());
+
+	for(std::shared_ptr<ColourTable> & colourTable : colourTables) {
+		m_colourTableConnections.push_back(colourTable->modified.connect(std::bind(&Palette::onColourTableModified, this, std::placeholders::_1)));
+	}
+}
+
+void Palette::updateParent() {
+	std::vector<std::shared_ptr<ColourTable>> colourTables(getAllColourTables());
+
+	for(std::shared_ptr<ColourTable> & colourTable : colourTables) {
+		colourTable->setParent(this);
+	}
+}
+
 bool Palette::isValid(bool verifyParent) const {
 	uint8_t colourTableCount = numberOfColourTables();
 
@@ -311,4 +367,16 @@ bool Palette::isValid(bool verifyParent) const {
 bool Palette::isValid(const Palette * palette, bool verifyParent) {
 	return palette != nullptr &&
 		   palette->isValid();
+}
+
+void Palette::setModified(bool modified) const {
+	if(!modified) {
+		std::vector<std::shared_ptr<ColourTable>> colourTables(getAllColourTables());
+
+		for(std::shared_ptr<ColourTable> & colourTable : colourTables) {
+			colourTable->setModified(false);
+		}
+	}
+
+	GameFile::setModified(modified);
 }
