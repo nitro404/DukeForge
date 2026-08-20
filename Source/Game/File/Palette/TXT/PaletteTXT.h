@@ -19,7 +19,6 @@ public:
 	// Palette Virtuals
 	const std::vector<std::string> & getFileFormatExtensions() const override;
 	const std::string & getFileFormatName() const override;
-	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	Endianness getEndianness() const override;
 	size_t getSizeInBytes() const override;
@@ -29,11 +28,6 @@ public:
 
 	static const std::vector<std::string> FILE_FORMAT_EXTENSIONS;
 	static const std::string FILE_FORMAT_NAME;
-
-private:
-	void updateParent();
-
-	std::shared_ptr<ColourTable> m_colourTable;
 };
 
 #endif // _PALETTE_TXT_H_

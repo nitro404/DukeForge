@@ -31,7 +31,6 @@ public:
 	// Palette Virtuals
 	const std::vector<std::string> & getFileFormatExtensions() const override;
 	const std::string & getFileFormatName() const override;
-	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	Endianness getEndianness() const override;
 	size_t getSizeInBytes() const override;
@@ -49,7 +48,6 @@ private:
 
 	Format m_format;
 	std::string m_comment;
-	std::shared_ptr<ColourTable> m_colourTable;
 };
 
 #endif // _PALETTE_CSS_H_

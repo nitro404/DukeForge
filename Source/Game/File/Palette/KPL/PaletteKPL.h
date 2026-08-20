@@ -37,7 +37,6 @@ public:
 	// Palette Virtuals
 	const std::vector<std::string> & getFileFormatExtensions() const override;
 	const std::string & getFileFormatName() const override;
-	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	Endianness getEndianness() const override;
 	size_t getSizeInBytes() const override;
@@ -65,8 +64,6 @@ private:
 	uint8_t m_numberOfColumns;
 	bool m_readOnly;
 	mutable std::unique_ptr<ZipArchive> m_archive;
-	std::shared_ptr<ColourTable> m_colourTable;
-	boost::signals2::connection m_colourTableModifiedConnection;
 };
 
 #endif // _PALETTE_KPL_H_

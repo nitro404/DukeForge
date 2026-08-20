@@ -220,8 +220,6 @@ public:
 	// Palette Virtuals
 	const std::vector<std::string> & getFileFormatExtensions() const override;
 	const std::string & getFileFormatName() const override;
-	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
-	uint8_t numberOfColourTables() const override;
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	Endianness getEndianness() const override;
@@ -256,7 +254,6 @@ private:
 	void updateParent();
 
 	Type m_type;
-	std::vector<std::shared_ptr<ColourTable>> m_colourTables;
 	std::vector<std::shared_ptr<ShadeTable>> m_shadeTables;
 	std::shared_ptr<TranslucencyTable> m_translucencyTable;
 	std::vector<std::shared_ptr<SwapTable>> m_swapTables;

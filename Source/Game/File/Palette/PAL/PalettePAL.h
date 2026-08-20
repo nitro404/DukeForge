@@ -36,7 +36,6 @@ public:
 	// Palette Virtuals
 	const std::vector<std::string> & getFileFormatExtensions() const override;
 	const std::string & getFileFormatName() const override;
-	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const override;
 	bool writeTo(ByteBuffer & byteBuffer) const override;
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
 	Endianness getEndianness() const override;
@@ -60,10 +59,7 @@ public:
 	static constexpr uint8_t CHUNK_TYPE_SIZE_BYTES = 4;
 
 private:
-	void updateParent();
-
 	uint16_t m_version;
-	std::shared_ptr<ColourTable> m_colourTable;
 	std::vector<ColourFlag> m_colourFlags;
 };
 

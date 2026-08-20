@@ -8,36 +8,20 @@ const std::vector<std::string> PaletteACT::FILE_FORMAT_EXTENSIONS({ "ACT" });
 const std::string PaletteACT::FILE_FORMAT_NAME("Adobe Photoshop Palette");
 
 PaletteACT::PaletteACT(const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(std::make_shared<ColourTable>()) {
-	updateParent();
-}
+	: Palette(std::make_unique<ColourTable>(), filePath) { }
 
 PaletteACT::PaletteACT(std::unique_ptr<ColourTable> colourTable, const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(colourTable != nullptr ? std::move(colourTable) : std::make_shared<ColourTable>()) {
-	updateParent();
-}
+	: Palette(colourTable != nullptr ? std::move(colourTable) : std::make_unique<ColourTable>(), filePath) { }
 
 PaletteACT::PaletteACT(PaletteACT && palette) noexcept
-	: Palette(std::move(palette))
-	, m_colourTable(std::move(palette.m_colourTable)) {
-	updateParent();
-}
+	: Palette(std::move(palette)) { }
 
 PaletteACT::PaletteACT(const PaletteACT & palette)
-	: Palette(palette)
-	, m_colourTable(palette.m_colourTable) {
-	updateParent();
-}
+	: Palette(palette) { }
 
 PaletteACT & PaletteACT::operator = (PaletteACT && palette) noexcept {
 	if(this != &palette) {
 		Palette::operator = (std::move(palette));
-
-		m_colourTable = std::move(palette.m_colourTable);
-
-		updateParent();
 	}
 
 	return *this;
@@ -45,10 +29,6 @@ PaletteACT & PaletteACT::operator = (PaletteACT && palette) noexcept {
 
 PaletteACT & PaletteACT::operator = (const PaletteACT & palette) {
 	Palette::operator = (palette);
-
-	m_colourTable = palette.m_colourTable;
-
-	updateParent();
 
 	return *this;
 }
@@ -61,14 +41,6 @@ const std::vector<std::string> & PaletteACT::getFileFormatExtensions() const {
 
 const std::string & PaletteACT::getFileFormatName() const {
 	return FILE_FORMAT_NAME;
-}
-
-std::shared_ptr<ColourTable> PaletteACT::getColourTable(uint8_t colourTableIndex) const {
-	if(colourTableIndex != 0) {
-		return nullptr;
-	}
-
-	return m_colourTable;
 }
 
 std::unique_ptr<PaletteACT> PaletteACT::readFrom(const ByteBuffer & byteBuffer) {
@@ -173,19 +145,21 @@ std::unique_ptr<PaletteACT> PaletteACT::loadFrom(const std::string & filePath) {
 }
 
 bool PaletteACT::writeTo(ByteBuffer & byteBuffer) const {
+	std::shared_ptr<ColourTable> colourTable(m_colourTables.front());
+
 	byteBuffer.setEndianness(ENDIANNESS);
 
-	if(!m_colourTable->writeTo(byteBuffer, false, Colour::BLACK)) {
+	if(!colourTable->writeTo(byteBuffer, false, Colour::BLACK)) {
 		return false;
 	}
 
-	if(m_colourTable->hasTransparentColourIndex() || m_colourTable->numberOfColours() != ColourTable::NUMBER_OF_COLOURS) {
-		if(!byteBuffer.writeUnsignedShort(m_colourTable->numberOfColours())) {
+	if(colourTable->hasTransparentColourIndex() || colourTable->numberOfColours() != ColourTable::NUMBER_OF_COLOURS) {
+		if(!byteBuffer.writeUnsignedShort(colourTable->numberOfColours())) {
 			return false;
 		}
 
-		if(m_colourTable->hasTransparentColourIndex()) {
-			if(!byteBuffer.writeUnsignedShort(m_colourTable->getTransparentColourIndex().value())) {
+		if(colourTable->hasTransparentColourIndex()) {
+			if(!byteBuffer.writeUnsignedShort(colourTable->getTransparentColourIndex().value())) {
 				return false;
 			}
 		}
@@ -204,11 +178,9 @@ Endianness PaletteACT::getEndianness() const {
 }
 
 size_t PaletteACT::getSizeInBytes() const {
-	return ColourTable::NUMBER_OF_COLOURS * BYTES_PER_COLOUR + (m_colourTable->hasTransparentColourIndex() || m_colourTable->numberOfColours() != ColourTable::NUMBER_OF_COLOURS ? (sizeof(uint16_t) * 2) : 0);
-}
+	std::shared_ptr<ColourTable> colourTable(m_colourTables.front());
 
-void PaletteACT::updateParent() {
-	m_colourTable->setParent(this);
+	return ColourTable::NUMBER_OF_COLOURS * BYTES_PER_COLOUR + (colourTable->hasTransparentColourIndex() || colourTable->numberOfColours() != ColourTable::NUMBER_OF_COLOURS ? (sizeof(uint16_t) * 2) : 0);
 }
 
 bool PaletteACT::operator == (const PaletteACT & palette) const {
@@ -216,7 +188,7 @@ bool PaletteACT::operator == (const PaletteACT & palette) const {
 		return true;
 	}
 
-	return *m_colourTable == *palette.m_colourTable;
+	return Palette::operator == (palette);
 }
 
 bool PaletteACT::operator != (const PaletteACT & palette) const {

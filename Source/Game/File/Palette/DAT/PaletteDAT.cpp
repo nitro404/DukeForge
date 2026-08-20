@@ -79,9 +79,8 @@ PaletteDAT::PaletteDAT(Type type, const std::string & filePath)
 }
 
 PaletteDAT::PaletteDAT(std::unique_ptr<ColourTable> colourTable, std::vector<std::unique_ptr<ShadeTable>> shadeTables, std::unique_ptr<TranslucencyTable> translucencyTable, std::unique_ptr<ByteBuffer> trailingData, const std::string & filePath)
-	: Palette(filePath)
+	: Palette(colourTable != nullptr ? std::move(colourTable) : std::make_unique<ColourTable>(), filePath)
 	, m_type(Type::Palette)
-	, m_colourTables({ colourTable != nullptr ? std::move(colourTable) : std::make_shared<ColourTable>() })
 	, m_translucencyTable(std::move(translucencyTable))
 	, m_trailingData(trailingData != nullptr ? std::move(trailingData) : std::make_unique<ByteBuffer>()) {
 	m_shadeTables.reserve(shadeTables.size());
@@ -95,15 +94,10 @@ PaletteDAT::PaletteDAT(std::unique_ptr<ColourTable> colourTable, std::vector<std
 }
 
 PaletteDAT::PaletteDAT(std::vector<std::unique_ptr<ColourTable>> colourTables, std::vector<std::unique_ptr<SwapTable>> swapTables, std::unique_ptr<ByteBuffer> trailingData, const std::string & filePath)
-	: Palette(filePath)
+	: Palette(std::move(colourTables), filePath)
 	, m_type(Type::Lookup)
 	, m_trailingData(trailingData != nullptr ? std::move(trailingData) : std::make_unique<ByteBuffer>()) {
-	m_colourTables.reserve(colourTables.size());
 	m_swapTables.reserve(swapTables.size());
-
-	for(std::unique_ptr<ColourTable> & colourTable : colourTables) {
-		m_colourTables.emplace_back(std::move(colourTable));
-	}
 
 	for(std::unique_ptr<SwapTable> & swapTable : swapTables) {
 		m_swapTables.emplace_back(std::move(swapTable));
@@ -117,6 +111,10 @@ PaletteDAT::PaletteDAT(PaletteDAT && palette) noexcept
 	: Palette(std::move(palette))
 	, m_type(palette.m_type)
 	, m_trailingData(std::move(palette.m_trailingData)) {
+	m_shadeTables = std::move(palette.m_shadeTables);
+	m_translucencyTable = std::move(palette.m_translucencyTable);
+	m_swapTables = std::move(palette.m_swapTables);
+
 	updateParent();
 	connectSignals();
 }
@@ -125,6 +123,22 @@ PaletteDAT::PaletteDAT(const PaletteDAT & palette)
 	: Palette(palette)
 	, m_type(palette.m_type)
 	, m_trailingData(std::make_unique<ByteBuffer>(*palette.m_trailingData)) {
+	m_shadeTables.reserve(palette.m_shadeTables.size());
+
+	for(const std::shared_ptr<const ShadeTable> & shadeTable : palette.m_shadeTables) {
+		m_shadeTables.emplace_back(std::make_shared<ShadeTable>(*shadeTable));
+	}
+
+	if(palette.m_translucencyTable != nullptr) {
+		m_translucencyTable = std::make_shared<TranslucencyTable>(*palette.m_translucencyTable);
+	}
+
+	m_swapTables.reserve(palette.m_swapTables.size());
+
+	for(const std::shared_ptr<const SwapTable> & swapTable : palette.m_swapTables) {
+		m_swapTables.emplace_back(std::make_shared<SwapTable>(*swapTable));
+	}
+
 	updateParent();
 	connectSignals();
 }
@@ -133,8 +147,15 @@ PaletteDAT & PaletteDAT::operator = (PaletteDAT && palette) noexcept {
 	if(this != &palette) {
 		Palette::operator = (std::move(palette));
 
-		m_type = palette.m_type;
-		m_trailingData = std::move(palette.m_trailingData);
+		for(std::shared_ptr<ShadeTable> & shadeTable : m_shadeTables) {
+			shadeTable->clearParent();
+		}
+
+		m_translucencyTable->clearParent();
+
+		for(std::shared_ptr<SwapTable> & swapTable : m_swapTables) {
+			swapTable->clearParent();
+		}
 
 		for(boost::signals2::connection & shadeTableModifiedConnection : m_shadeTableModifiedConnections) {
 			shadeTableModifiedConnection.disconnect();
@@ -150,6 +171,12 @@ PaletteDAT & PaletteDAT::operator = (PaletteDAT && palette) noexcept {
 
 		m_swapTableModifiedConnections.clear();
 
+		m_type = palette.m_type;
+		m_trailingData = std::move(palette.m_trailingData);
+		m_shadeTables = std::move(palette.m_shadeTables);
+		m_translucencyTable = std::move(palette.m_translucencyTable);
+		m_swapTables = std::move(palette.m_swapTables);
+
 		updateParent();
 		connectSignals();
 	}
@@ -160,8 +187,15 @@ PaletteDAT & PaletteDAT::operator = (PaletteDAT && palette) noexcept {
 PaletteDAT & PaletteDAT::operator = (const PaletteDAT & palette) {
 	Palette::operator = (palette);
 
-	m_type = palette.m_type;
-	m_trailingData = std::make_unique<ByteBuffer>(*palette.m_trailingData);
+	for(std::shared_ptr<ShadeTable> & shadeTable : m_shadeTables) {
+		shadeTable->clearParent();
+	}
+
+	m_translucencyTable->clearParent();
+
+	for(std::shared_ptr<SwapTable> & swapTable : m_swapTables) {
+		swapTable->clearParent();
+	}
 
 	for(boost::signals2::connection & shadeTableModifiedConnection : m_shadeTableModifiedConnections) {
 		shadeTableModifiedConnection.disconnect();
@@ -176,6 +210,31 @@ PaletteDAT & PaletteDAT::operator = (const PaletteDAT & palette) {
 	}
 
 	m_swapTableModifiedConnections.clear();
+
+	m_type = palette.m_type;
+	m_trailingData = std::make_unique<ByteBuffer>(*palette.m_trailingData);
+	m_shadeTables.clear();
+	m_translucencyTable.reset();
+	m_swapTables.clear();
+
+	m_shadeTables.reserve(palette.m_shadeTables.size());
+
+	for(const std::shared_ptr<const ShadeTable> & shadeTable : palette.m_shadeTables) {
+		m_shadeTables.emplace_back(std::make_shared<ShadeTable>(*shadeTable));
+	}
+
+	if(palette.m_translucencyTable != nullptr) {
+		m_translucencyTable = std::make_shared<TranslucencyTable>(*palette.m_translucencyTable);
+	}
+	else {
+		m_translucencyTable.reset();
+	}
+
+	m_swapTables.reserve(palette.m_swapTables.size());
+
+	for(const std::shared_ptr<const SwapTable> & swapTable : palette.m_swapTables) {
+		m_swapTables.emplace_back(std::make_shared<SwapTable>(*swapTable));
+	}
 
 	updateParent();
 	connectSignals();
@@ -194,24 +253,16 @@ PaletteDAT::~PaletteDAT() {
 		swapTableModifiedConnection.disconnect();
 	}
 
-	switch(m_type) {
-		case Type::Palette: {
-			for(std::shared_ptr<ShadeTable> & shadeTable : m_shadeTables) {
-				shadeTable->clearParent();
-			}
+	for(std::shared_ptr<ShadeTable> & shadeTable : m_shadeTables) {
+		shadeTable->clearParent();
+	}
 
-			m_translucencyTable->clearParent();
+	if(m_translucencyTable != nullptr) {
+		m_translucencyTable->clearParent();
+	}
 
-			break;
-		}
-
-		case Type::Lookup: {
-			for(std::shared_ptr<SwapTable> & swapTable : m_swapTables) {
-				swapTable->clearParent();
-			}
-
-			break;
-		}
+	for(std::shared_ptr<SwapTable> & swapTable : m_swapTables) {
+		swapTable->clearParent();
 	}
 }
 
@@ -507,18 +558,6 @@ void PaletteDAT::clearSwapTables() {
 	m_swapTables.clear();
 }
 
-std::shared_ptr<ColourTable> PaletteDAT::getColourTable(uint8_t colourTableIndex) const {
-	if(colourTableIndex >= m_colourTables.size()) {
-		return nullptr;
-	}
-
-	return m_colourTables[colourTableIndex];
-}
-
-uint8_t PaletteDAT::numberOfColourTables() const {
-	return m_colourTables.size();
-}
-
 void PaletteDAT::addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const {
 	Palette::addMetadata(metadata);
 
@@ -749,7 +788,7 @@ bool PaletteDAT::writePaletteTo(ByteBuffer & byteBuffer) const {
 		}
 	}
 
-	if(!m_translucencyTable->writeTo(byteBuffer)) {
+	if(m_translucencyTable != nullptr && !m_translucencyTable->writeTo(byteBuffer)) {
 		spdlog::error("Failed to write Build Engine DAT regular palette translucency table data.");
 		return false;
 	}
@@ -974,7 +1013,9 @@ void PaletteDAT::connectSignals() {
 		m_shadeTableModifiedConnections.push_back(shadeTable->modified.connect(std::bind(&PaletteDAT::onShadeTableModified, this, std::placeholders::_1)));
 	}
 
-	m_translucencyTableModifiedConnection = m_translucencyTable->modified.connect(std::bind(&PaletteDAT::onTranslucencyTableModified, this, std::placeholders::_1));
+	if(m_translucencyTable != nullptr) {
+		m_translucencyTableModifiedConnection = m_translucencyTable->modified.connect(std::bind(&PaletteDAT::onTranslucencyTableModified, this, std::placeholders::_1));
+	}
 
 	for(std::shared_ptr<SwapTable> & swapTable : m_swapTables) {
 		m_swapTableModifiedConnections.push_back(swapTable->modified.connect(std::bind(&PaletteDAT::onSwapTableModified, this, std::placeholders::_1)));
@@ -982,24 +1023,16 @@ void PaletteDAT::connectSignals() {
 }
 
 void PaletteDAT::updateParent() {
-	switch(m_type) {
-		case Type::Palette: {
-			for(std::shared_ptr<ShadeTable> & shadeTable : m_shadeTables) {
-				shadeTable->setParent(this);
-			}
+	for(std::shared_ptr<ShadeTable> & shadeTable : m_shadeTables) {
+		shadeTable->setParent(this);
+	}
 
-			m_translucencyTable->setParent(this);
+	if(m_translucencyTable != nullptr) {
+		m_translucencyTable->setParent(this);
+	}
 
-			break;
-		}
-
-		case Type::Lookup: {
-			for(std::shared_ptr<SwapTable> & swapTable : m_swapTables) {
-				swapTable->setParent(this);
-			}
-
-			break;
-		}
+	for(std::shared_ptr<SwapTable> & swapTable : m_swapTables) {
+		swapTable->setParent(this);
 	}
 }
 
@@ -1008,16 +1041,10 @@ bool PaletteDAT::operator == (const PaletteDAT & palette) const {
 		return true;
 	}
 
-	if(m_type != palette.m_type ||
-	   m_colourTables.size() != palette.m_colourTables.size() ||
+	if(Palette::operator != (palette) ||
+	   m_type != palette.m_type ||
 	   *m_trailingData != *palette.m_trailingData) {
 		return false;
-	}
-
-	for(size_t i = 0; i < m_colourTables.size(); i++) {
-		if(*m_colourTables[i] != *palette.m_colourTables[i]) {
-			return false;
-		}
 	}
 
 	switch(m_type) {

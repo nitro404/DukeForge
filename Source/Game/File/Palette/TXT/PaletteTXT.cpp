@@ -11,36 +11,20 @@ const std::vector<std::string> PaletteTXT::FILE_FORMAT_EXTENSIONS({ "TXT" });
 const std::string PaletteTXT::FILE_FORMAT_NAME("Plaintext Palette");
 
 PaletteTXT::PaletteTXT(const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(std::make_shared<ColourTable>()) {
-	updateParent();
-}
+	: Palette(std::make_unique<ColourTable>(), filePath) { }
 
 PaletteTXT::PaletteTXT(std::unique_ptr<ColourTable> colourTable, const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(colourTable != nullptr ? std::move(colourTable) : std::make_shared<ColourTable>()) {
-	updateParent();
-}
+	: Palette(std::move(colourTable), filePath) { }
 
 PaletteTXT::PaletteTXT(PaletteTXT && palette) noexcept
-	: Palette(std::move(palette))
-	, m_colourTable(std::move(palette.m_colourTable)) {
-	updateParent();
-}
+	: Palette(std::move(palette)) { }
 
 PaletteTXT::PaletteTXT(const PaletteTXT & palette)
-	: Palette(palette)
-	, m_colourTable(palette.m_colourTable) {
-	updateParent();
-}
+	: Palette(palette) { }
 
 PaletteTXT & PaletteTXT::operator = (PaletteTXT && palette) noexcept {
 	if(this != &palette) {
 		Palette::operator = (std::move(palette));
-
-		m_colourTable = std::move(palette.m_colourTable);
-
-		updateParent();
 	}
 
 	return *this;
@@ -48,10 +32,6 @@ PaletteTXT & PaletteTXT::operator = (PaletteTXT && palette) noexcept {
 
 PaletteTXT & PaletteTXT::operator = (const PaletteTXT & palette) {
 	Palette::operator = (palette);
-
-	m_colourTable = palette.m_colourTable;
-
-	updateParent();
 
 	return *this;
 }
@@ -64,14 +44,6 @@ const std::vector<std::string> & PaletteTXT::getFileFormatExtensions() const {
 
 const std::string & PaletteTXT::getFileFormatName() const {
 	return FILE_FORMAT_NAME;
-}
-
-std::shared_ptr<ColourTable> PaletteTXT::getColourTable(uint8_t colourTableIndex) const {
-	if(colourTableIndex != 0) {
-		return nullptr;
-	}
-
-	return m_colourTable;
 }
 
 std::unique_ptr<PaletteTXT> PaletteTXT::readFrom(const ByteBuffer & byteBuffer) {
@@ -127,7 +99,7 @@ std::unique_ptr<PaletteTXT> PaletteTXT::loadFrom(const std::string & filePath) {
 }
 
 bool PaletteTXT::writeTo(ByteBuffer & byteBuffer) const {
-	for(const Colour & colour : m_colourTable->getColours()) {
+	for(const Colour & colour : m_colourTables.front()->getColours()) {
 		if(!byteBuffer.writeString(fmt::format("#{}{}{}\n", Utilities::toHexadecimal(colour.r), Utilities::toHexadecimal(colour.g), Utilities::toHexadecimal(colour.b)))) {
 			return false;
 		}
@@ -141,19 +113,11 @@ Endianness PaletteTXT::getEndianness() const {
 }
 
 size_t PaletteTXT::getSizeInBytes() const {
-	return m_colourTable->numberOfColours() * 8u;
-}
-
-void PaletteTXT::updateParent() {
-	m_colourTable->setParent(this);
+	return m_colourTables.front()->numberOfColours() * 8u;
 }
 
 bool PaletteTXT::operator == (const PaletteTXT & palette) const {
-	if(this == &palette) {
-		return true;
-	}
-
-	return *m_colourTable == *palette.m_colourTable;
+	return Palette::operator == (palette);
 }
 
 bool PaletteTXT::operator != (const PaletteTXT & palette) const {

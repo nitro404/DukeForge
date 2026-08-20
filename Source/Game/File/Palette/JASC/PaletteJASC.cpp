@@ -11,41 +11,26 @@ const std::vector<std::string> PaletteJASC::FILE_FORMAT_EXTENSIONS({ "JASC" });
 const std::string PaletteJASC::FILE_FORMAT_NAME("Paint Shop Pro Palette");
 
 PaletteJASC::PaletteJASC(const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(std::make_shared<ColourTable>())
-	, m_version(VERSION) {
-	updateParent();
-}
+	: Palette(std::make_unique<ColourTable>(), filePath)
+	, m_version(VERSION) { }
 
 PaletteJASC::PaletteJASC(std::unique_ptr<ColourTable> colourTable, const std::string & version, const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(colourTable != nullptr ? std::move(colourTable) : std::make_shared<ColourTable>())
-	, m_version(version) {
-	updateParent();
-}
+	: Palette(colourTable != nullptr ? std::move(colourTable) : std::make_unique<ColourTable>(), filePath)
+	, m_version(version) { }
 
 PaletteJASC::PaletteJASC(PaletteJASC && palette) noexcept
 	: Palette(std::move(palette))
-	, m_colourTable(std::move(palette.m_colourTable))
-	, m_version(std::move(palette.m_version)) {
-	updateParent();
-}
+	, m_version(std::move(palette.m_version)) { }
 
 PaletteJASC::PaletteJASC(const PaletteJASC & palette)
 	: Palette(palette)
-	, m_colourTable(palette.m_colourTable)
-	, m_version(palette.m_version) {
-	updateParent();
-}
+	, m_version(palette.m_version) { }
 
 PaletteJASC & PaletteJASC::operator = (PaletteJASC && palette) noexcept {
 	if(this != &palette) {
 		Palette::operator = (std::move(palette));
 
-		m_colourTable = std::move(palette.m_colourTable);
 		m_version = std::move(palette.m_version);
-
-		updateParent();
 	}
 
 	return *this;
@@ -54,10 +39,7 @@ PaletteJASC & PaletteJASC::operator = (PaletteJASC && palette) noexcept {
 PaletteJASC & PaletteJASC::operator = (const PaletteJASC & palette) {
 	Palette::operator = (palette);
 
-	m_colourTable = palette.m_colourTable;
 	m_version = palette.m_version;
-
-	updateParent();
 
 	return *this;
 }
@@ -74,14 +56,6 @@ const std::string & PaletteJASC::getFileFormatName() const {
 
 const std::string & PaletteJASC::getVersion() const {
 	return m_version;
-}
-
-std::shared_ptr<ColourTable> PaletteJASC::getColourTable(uint8_t colourTableIndex) const {
-	if(colourTableIndex != 0) {
-		return nullptr;
-	}
-
-	return m_colourTable;
 }
 
 std::unique_ptr<PaletteJASC> PaletteJASC::readFrom(const ByteBuffer & byteBuffer) {
@@ -232,19 +206,21 @@ std::unique_ptr<PaletteJASC> PaletteJASC::loadFrom(const std::string & filePath)
 }
 
 bool PaletteJASC::writeTo(ByteBuffer & byteBuffer) const {
+	std::shared_ptr<ColourTable> colourTable(m_colourTables.front());
+
 	byteBuffer.writeLine(MAGIC);
 
 	byteBuffer.writeLine(VERSION);
 
-	byteBuffer.writeLine(std::to_string(m_colourTable->numberOfColours()));
+	byteBuffer.writeLine(std::to_string(colourTable->numberOfColours()));
 
-	for(const Colour & colour : m_colourTable->getColours()) {
+	for(const Colour & colour : colourTable->getColours()) {
 		if(!byteBuffer.writeLine(fmt::format("{} {} {}", colour.r, colour.g, colour.b))) {
 			return false;
 		}
 	}
 
-	uint16_t paddingAmount = ColourTable::NUMBER_OF_COLOURS - m_colourTable->numberOfColours();
+	uint16_t paddingAmount = ColourTable::NUMBER_OF_COLOURS - colourTable->numberOfColours();
 
 	for(uint16_t i = 0; i < paddingAmount; i++) {
 		if(!byteBuffer.writeLine("0 0 0")) {
@@ -266,19 +242,17 @@ Endianness PaletteJASC::getEndianness() const {
 }
 
 size_t PaletteJASC::getSizeInBytes() const {
-	size_t sizeBytes = MAGIC.length() + VERSION.length() + Utilities::unsignedShortLength(m_colourTable->numberOfColours()) + (sizeof(uint8_t) * 3);
+	std::shared_ptr<ColourTable> colourTable(m_colourTables.front());
 
-	for(const Colour & colour : m_colourTable->getColours()) {
+	size_t sizeBytes = MAGIC.length() + VERSION.length() + Utilities::unsignedShortLength(colourTable->numberOfColours()) + (sizeof(uint8_t) * 3);
+
+	for(const Colour & colour : colourTable->getColours()) {
 		for(uint8_t i = 0; i < 3; i++) {
 			sizeBytes += Utilities::unsignedByteLength(colour.c[i]) + sizeof(uint8_t);
 		}
 	}
 
-	return sizeBytes + ((ColourTable::NUMBER_OF_COLOURS - m_colourTable->numberOfColours()) * (sizeof(uint8_t) * 6));
-}
-
-void PaletteJASC::updateParent() {
-	m_colourTable->setParent(this);
+	return sizeBytes + ((ColourTable::NUMBER_OF_COLOURS - colourTable->numberOfColours()) * (sizeof(uint8_t) * 6));
 }
 
 bool PaletteJASC::operator == (const PaletteJASC & palette) const {
@@ -286,7 +260,7 @@ bool PaletteJASC::operator == (const PaletteJASC & palette) const {
 		return true;
 	}
 
-	return *m_colourTable == *palette.m_colourTable &&
+	return Palette::operator == (palette) &&
 		   Utilities::areStringsEqual(m_version, palette.m_version);
 }
 

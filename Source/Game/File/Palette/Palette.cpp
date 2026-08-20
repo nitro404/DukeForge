@@ -15,6 +15,28 @@ static size_t getColourIndex(uint8_t x, uint8_t y) {
 Palette::Palette(const std::string & filePath)
 	: GameFile(filePath) { }
 
+Palette::Palette(std::unique_ptr<ColourTable> colourTable, const std::string & filePath)
+	: GameFile(filePath) {
+	if(colourTable != nullptr) {
+		m_colourTables.emplace_back(std::move(colourTable));
+	}
+
+	updateParent();
+	connectSignals();
+}
+
+Palette::Palette(std::vector<std::unique_ptr<ColourTable>> && colourTables, const std::string & filePath)
+	: GameFile(filePath) {
+	m_colourTables.reserve(colourTables.size());
+
+	for(std::unique_ptr<ColourTable> & colourTable : colourTables) {
+		m_colourTables.emplace_back(std::move(colourTable));
+	}
+
+	updateParent();
+	connectSignals();
+}
+
 Palette::Palette(Palette && palette) noexcept
 	: GameFile(std::move(palette)) {
 	updateParent();
@@ -64,9 +86,7 @@ Palette::~Palette() {
 		colourTableConnection.disconnect();
 	}
 
-	std::vector<std::shared_ptr<ColourTable>> colourTables(getAllColourTables());
-
-	for(std::shared_ptr<ColourTable> & colourTable : colourTables) {
+	for(std::shared_ptr<ColourTable> & colourTable : m_colourTables) {
 		colourTable->clearParent();
 	}
 }
@@ -207,23 +227,16 @@ bool Palette::setColour(uint8_t x, uint8_t y, const Colour & colour, uint8_t col
 	return setColour(colourIndex, colour, colourTableIndex);
 }
 
-std::vector<std::shared_ptr<ColourTable>> Palette::getAllColourTables() const {
-	bool error = false;
-	uint8_t colourTableCount = numberOfColourTables();
-	std::shared_ptr<ColourTable> colourTable;
-	std::vector<std::shared_ptr<ColourTable>> colourTables;
-
-	for(uint8_t i = 0; i < colourTableCount; i++) {
-		colourTable = getColourTable(i);
-
-		if(colourTable == nullptr) {
-			return {};
-		}
-
-		colourTables.emplace_back(colourTable);
+std::shared_ptr<ColourTable> Palette::getColourTable(uint8_t colourTableIndex) const {
+	if(colourTableIndex >= m_colourTables.size()) {
+		return nullptr;
 	}
 
-	return colourTables;
+	return m_colourTables[colourTableIndex];
+}
+
+const std::vector<std::shared_ptr<ColourTable>> & Palette::getAllColourTables() const {
+	return m_colourTables;
 }
 
 bool Palette::updateColourTable(uint8_t colourTableIndex, const ColourTable & colourTable) {
@@ -318,24 +331,20 @@ void Palette::addMetadata(std::vector<std::pair<std::string, std::string>> & met
 	}
 }
 
-void Palette::onColourTableModified(ColourTable & colourTable) {
+void Palette::onColourTableModified(const ColourTable & colourTable) {
 	if(colourTable.isModified()) {
 		setModified(true);
 	}
 }
 
 void Palette::connectSignals() {
-	std::vector<std::shared_ptr<ColourTable>> colourTables(getAllColourTables());
-
-	for(std::shared_ptr<ColourTable> & colourTable : colourTables) {
+	for(std::shared_ptr<ColourTable> & colourTable : m_colourTables) {
 		m_colourTableConnections.push_back(colourTable->modified.connect(std::bind(&Palette::onColourTableModified, this, std::placeholders::_1)));
 	}
 }
 
 void Palette::updateParent() {
-	std::vector<std::shared_ptr<ColourTable>> colourTables(getAllColourTables());
-
-	for(std::shared_ptr<ColourTable> & colourTable : colourTables) {
+	for(std::shared_ptr<ColourTable> & colourTable : m_colourTables) {
 		colourTable->setParent(this);
 	}
 }
@@ -371,12 +380,28 @@ bool Palette::isValid(const Palette * palette, bool verifyParent) {
 
 void Palette::setModified(bool modified) const {
 	if(!modified) {
-		std::vector<std::shared_ptr<ColourTable>> colourTables(getAllColourTables());
-
-		for(std::shared_ptr<ColourTable> & colourTable : colourTables) {
+		for(const std::shared_ptr<const ColourTable> & colourTable : m_colourTables) {
 			colourTable->setModified(false);
 		}
 	}
 
 	GameFile::setModified(modified);
+}
+
+bool Palette::operator == (const Palette & palette) const {
+	if(m_colourTables.size() != palette.m_colourTables.size()) {
+		return false;
+	}
+
+	for(size_t i = 0; i < m_colourTables.size(); i++) {
+		if(*m_colourTables[i] != *palette.m_colourTables[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool Palette::operator != (const Palette & palette) const {
+	return !operator == (palette);
 }

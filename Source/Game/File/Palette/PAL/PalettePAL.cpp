@@ -10,55 +10,39 @@ const std::vector<std::string> PalettePAL::FILE_FORMAT_EXTENSIONS({ "PAL" });
 const std::string PalettePAL::FILE_FORMAT_NAME("Microsoft Palette");
 
 PalettePAL::PalettePAL(const std::string & filePath)
-	: Palette(filePath)
-	, m_version(PAL_VERSION)
-	, m_colourTable(std::make_shared<ColourTable>()) {
-	updateParent();
-}
+	: Palette(std::make_unique<ColourTable>(), filePath)
+	, m_version(PAL_VERSION) { }
 
 PalettePAL::PalettePAL(std::unique_ptr<ColourTable> colourTable, std::vector<ColourFlag> colourFlags, uint16_t version, const std::string & filePath)
-	: Palette(filePath)
+	: Palette(colourTable != nullptr ? std::move(colourTable) : std::make_unique<ColourTable>(), filePath)
 	, m_version(version)
-	, m_colourTable(colourTable != nullptr ? std::move(colourTable) : std::make_shared<ColourTable>())
 	, m_colourFlags(colourFlags) {
-	m_colourFlags.resize(m_colourTable->numberOfColours(), ColourFlag::None);
-	updateParent();
+	m_colourFlags.resize(m_colourTables.front()->numberOfColours(), ColourFlag::None);
 }
 
 PalettePAL::PalettePAL(const ColourTable & colourTable, std::vector<ColourFlag> colourFlags, uint16_t version, const std::string & filePath)
-	: Palette(filePath)
+	: Palette(std::make_unique<ColourTable>(colourTable), filePath)
 	, m_version(version)
-	, m_colourTable(std::make_shared<ColourTable>(colourTable))
 	, m_colourFlags(colourFlags) {
-	m_colourFlags.resize(m_colourTable->numberOfColours(), ColourFlag::None);
-	updateParent();
+	m_colourFlags.resize(m_colourTables.front()->numberOfColours(), ColourFlag::None);
 }
 
 PalettePAL::PalettePAL(PalettePAL && palette) noexcept
 	: Palette(std::move(palette))
-	, m_colourTable(std::move(palette.m_colourTable))
 	, m_colourFlags(std::move(palette.m_colourFlags))
-	, m_version(palette.m_version) {
-	updateParent();
-}
+	, m_version(palette.m_version) { }
 
 PalettePAL::PalettePAL(const PalettePAL & palette)
 	: Palette(palette)
-	, m_colourTable(std::make_shared<ColourTable>(*palette.m_colourTable))
 	, m_colourFlags(palette.m_colourFlags)
-	, m_version(palette.m_version) {
-	updateParent();
-}
+	, m_version(palette.m_version) { }
 
 PalettePAL & PalettePAL::operator = (PalettePAL && palette) noexcept {
 	if(this != &palette) {
 		Palette::operator = (std::move(palette));
 
 		m_version = palette.m_version;
-		m_colourTable = std::move(palette.m_colourTable);
 		m_colourFlags = std::move(palette.m_colourFlags);
-
-		updateParent();
 	}
 
 	return *this;
@@ -68,10 +52,7 @@ PalettePAL & PalettePAL::operator = (const PalettePAL & palette) {
 	Palette::operator = (palette);
 
 	m_version = palette.m_version;
-	m_colourTable = std::make_shared<ColourTable>(*palette.m_colourTable);
 	m_colourFlags = palette.m_colourFlags;
-
-	updateParent();
 
 	return *this;
 }
@@ -99,15 +80,7 @@ size_t PalettePAL::getDocumentSizeInBytes() const {
 }
 
 size_t PalettePAL::getPaletteChunkSizeInBytes() const {
-	return (sizeof(uint16_t) * 2) + (m_colourTable->numberOfColours() * BYTES_PER_COLOUR);
-}
-
-std::shared_ptr<ColourTable> PalettePAL::getColourTable(uint8_t colourTableIndex) const {
-	if(colourTableIndex != 0) {
-		return nullptr;
-	}
-
-	return m_colourTable;
+	return (sizeof(uint16_t) * 2) + (m_colourTables.front()->numberOfColours() * BYTES_PER_COLOUR);
 }
 
 std::unique_ptr<PalettePAL> PalettePAL::readFrom(const ByteBuffer & byteBuffer) {
@@ -274,12 +247,14 @@ bool PalettePAL::writeTo(ByteBuffer & byteBuffer) const {
 		return false;
 	}
 
-	if(!byteBuffer.writeUnsignedShort(m_colourTable->numberOfColours())) {
+	std::shared_ptr<ColourTable> colourTable(m_colourTables.front());
+
+	if(!byteBuffer.writeUnsignedShort(colourTable->numberOfColours())) {
 		return false;
 	}
 
-	for(size_t i = 0; i < m_colourTable->numberOfColours(); i++) {
-		if(!(*m_colourTable)[i].writeTo(byteBuffer, false)) {
+	for(size_t i = 0; i < colourTable->numberOfColours(); i++) {
+		if(!(*colourTable)[i].writeTo(byteBuffer, false)) {
 			return false;
 		}
 
@@ -304,7 +279,7 @@ Endianness PalettePAL::getEndianness() const {
 }
 
 size_t PalettePAL::getSizeInBytes() const {
-	return RIFF_SIGNATURE_SIZE_BYTES + sizeof(uint32_t) + FORM_TYPE_SIZE_BYTES + CHUNK_TYPE_SIZE_BYTES + sizeof(uint32_t) + (sizeof(uint16_t) * 2) + (m_colourTable->numberOfColours() * BYTES_PER_COLOUR);
+	return RIFF_SIGNATURE_SIZE_BYTES + sizeof(uint32_t) + FORM_TYPE_SIZE_BYTES + CHUNK_TYPE_SIZE_BYTES + sizeof(uint32_t) + (sizeof(uint16_t) * 2) + (m_colourTables.front()->numberOfColours() * BYTES_PER_COLOUR);
 }
 
 bool PalettePAL::isValid(bool verifyParent) const {
@@ -312,16 +287,12 @@ bool PalettePAL::isValid(bool verifyParent) const {
 		return false;
 	}
 
-	return m_colourTable->numberOfColours() == m_colourFlags.size();
-}
-
-void PalettePAL::updateParent() {
-	m_colourTable->setParent(this);
+	return m_colourTables.front()->numberOfColours() == m_colourFlags.size();
 }
 
 bool PalettePAL::operator == (const PalettePAL & palette) const {
-	return m_version == palette.m_version &&
-		   *m_colourTable == *palette.m_colourTable &&
+	return Palette::operator == (palette) &&
+		   m_version == palette.m_version &&
 		   m_colourFlags == palette.m_colourFlags;
 }
 

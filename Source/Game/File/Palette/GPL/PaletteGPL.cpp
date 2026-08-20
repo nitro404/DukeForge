@@ -13,60 +13,44 @@ const std::vector<std::string> PaletteGPL::FILE_FORMAT_EXTENSIONS({ "GPL" });
 const std::string PaletteGPL::FILE_FORMAT_NAME("GIMP Palette");
 
 PaletteGPL::PaletteGPL(const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(std::make_shared<ColourTable>())
-	, m_colourNames(m_colourTable->numberOfColours()) {
-	updateParent();
-}
+	: Palette(std::make_unique<ColourTable>(), filePath)
+	, m_colourNames(m_colourTables.front()->numberOfColours()) { }
 
 PaletteGPL::PaletteGPL(std::unique_ptr<ColourTable> colourTable, std::vector<std::string> && colourNames, std::optional<uint8_t> columnCount, std::vector<std::string> && comments, const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(colourTable != nullptr ? std::move(colourTable) : std::make_shared<ColourTable>())
+	: Palette(colourTable != nullptr ? std::move(colourTable) : std::make_unique<ColourTable>(), filePath)
 	, m_colourNames(std::move(colourNames))
 	, m_numberOfColumns(columnCount)
 	, m_comments(std::move(comments)) {
-	m_colourNames.resize(m_colourTable->numberOfColours());
-	updateParent();
+	m_colourNames.resize(m_colourTables.front()->numberOfColours());
 }
 
 PaletteGPL::PaletteGPL(const ColourTable & colourTable, const std::vector<std::string> & colourNames, std::optional<uint8_t> columnCount, const std::vector<std::string> & comments, const std::string & filePath)
-	: Palette(filePath)
-	, m_colourTable(std::make_shared<ColourTable>(colourTable))
+	: Palette(std::make_unique<ColourTable>(colourTable), filePath)
 	, m_colourNames(colourNames)
 	, m_numberOfColumns(columnCount)
 	, m_comments(comments) {
-	m_colourNames.resize(m_colourTable->numberOfColours());
-	updateParent();
+	m_colourNames.resize(m_colourTables.front()->numberOfColours());
 }
 
 PaletteGPL::PaletteGPL(PaletteGPL && palette) noexcept
 	: Palette(std::move(palette))
-	, m_colourTable(std::move(palette.m_colourTable))
 	, m_colourNames(std::move(palette.m_colourNames))
 	, m_numberOfColumns(palette.m_numberOfColumns)
-	, m_comments(std::move(palette.m_comments)) {
-	updateParent();
-}
+	, m_comments(std::move(palette.m_comments)) { }
 
 PaletteGPL::PaletteGPL(const PaletteGPL & palette)
 	: Palette(palette)
-	, m_colourTable(palette.m_colourTable)
 	, m_colourNames(palette.m_colourNames)
 	, m_numberOfColumns(palette.m_numberOfColumns)
-	, m_comments(palette.m_comments) {
-	updateParent();
-}
+	, m_comments(palette.m_comments) { }
 
 PaletteGPL & PaletteGPL::operator = (PaletteGPL && palette) noexcept {
 	if(this != &palette) {
 		Palette::operator = (std::move(palette));
 
-		m_colourTable = std::move(palette.m_colourTable);
 		m_colourNames = std::move(palette.m_colourNames);
 		m_numberOfColumns = palette.m_numberOfColumns;
 		m_comments = std::move(palette.m_comments);
-
-		updateParent();
 	}
 
 	return *this;
@@ -75,12 +59,9 @@ PaletteGPL & PaletteGPL::operator = (PaletteGPL && palette) noexcept {
 PaletteGPL & PaletteGPL::operator = (const PaletteGPL & palette) {
 	Palette::operator = (palette);
 
-	m_colourTable = palette.m_colourTable;
 	m_colourNames = palette.m_colourNames;
 	m_numberOfColumns = palette.m_numberOfColumns;
 	m_comments = palette.m_comments;
-
-	updateParent();
 
 	return *this;
 }
@@ -93,14 +74,6 @@ const std::vector<std::string> & PaletteGPL::getFileFormatExtensions() const {
 
 const std::string & PaletteGPL::getFileFormatName() const {
 	return FILE_FORMAT_NAME;
-}
-
-std::shared_ptr<ColourTable> PaletteGPL::getColourTable(uint8_t colourTableIndex) const {
-	if(colourTableIndex != 0) {
-		return nullptr;
-	}
-
-	return m_colourTable;
 }
 
 size_t PaletteGPL::numberOfNamedColours() const {
@@ -516,9 +489,11 @@ std::unique_ptr<PaletteGPL> PaletteGPL::loadFrom(const std::string & filePath) {
 }
 
 bool PaletteGPL::writeTo(ByteBuffer & byteBuffer) const {
+	std::shared_ptr<ColourTable> colourTable(m_colourTables.front());
+
 	byteBuffer.writeLine(MAGIC);
 
-	byteBuffer.writeLine(NAME_KEY + ": " + m_colourTable->getName());
+	byteBuffer.writeLine(NAME_KEY + ": " + colourTable->getName());
 
 	if(m_numberOfColumns.has_value()) {
 		byteBuffer.writeLine(NUMBER_OF_COLUMNS_KEY + ": " + std::to_string(m_numberOfColumns.value()));
@@ -537,8 +512,8 @@ bool PaletteGPL::writeTo(ByteBuffer & byteBuffer) const {
 		byteBuffer.writeLine(std::string(1, COMMENT_CHARACTER));
 	}
 
-	for(size_t i = 0; i < m_colourTable->numberOfColours(); i++) {
-		const Colour & colour = m_colourTable->getColour(i);
+	for(size_t i = 0; i < colourTable->numberOfColours(); i++) {
+		const Colour & colour = colourTable->getColour(i);
 		std::stringstream colourStream;
 
 		for(uint8_t j = 0; j < 3; j++) {
@@ -576,7 +551,9 @@ Endianness PaletteGPL::getEndianness() const {
 }
 
 size_t PaletteGPL::getSizeInBytes() const {
-	size_t sizeBytes = MAGIC.length() + 1 + NAME_KEY.length() + 2 + m_colourTable->getName().length() + 1;
+	std::shared_ptr<ColourTable> colourTable(m_colourTables.front());
+
+	size_t sizeBytes = MAGIC.length() + 1 + NAME_KEY.length() + 2 + colourTable->getName().length() + 1;
 
 	if(m_numberOfColumns.has_value()) {
 		sizeBytes += NUMBER_OF_COLUMNS_KEY.length() + 2 + Utilities::unsignedByteLength(m_numberOfColumns.value()) + 1;
@@ -595,8 +572,8 @@ size_t PaletteGPL::getSizeInBytes() const {
 		sizeBytes += 2;
 	}
 
-	for(size_t i = 0; i < m_colourTable->numberOfColours(); i++) {
-		const Colour & colour = m_colourTable->getColour(i);
+	for(size_t i = 0; i < colourTable->numberOfColours(); i++) {
+		const Colour & colour = colourTable->getColour(i);
 
 		sizeBytes += 12;
 
@@ -608,16 +585,12 @@ size_t PaletteGPL::getSizeInBytes() const {
 	return sizeBytes;
 }
 
-void PaletteGPL::updateParent() {
-	m_colourTable->setParent(this);
-}
-
 bool PaletteGPL::operator == (const PaletteGPL & palette) const {
 	if(this == &palette) {
 		return true;
 	}
 
-	return *m_colourTable == *palette.m_colourTable &&
+	return Palette::operator == (palette) &&
 		   m_colourNames == palette.m_colourNames;
 }
 

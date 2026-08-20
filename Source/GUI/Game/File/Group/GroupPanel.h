@@ -38,7 +38,7 @@ public:
 	// GameFilePanel Virtuals
 	std::string getPanelName() const override;
 
-	boost::signals2::signal<void (GroupPanel & /* groupPanel*/)> groupFileSelectionChanged;
+	boost::signals2::signal<void (GroupPanel & /* groupPanel */)> groupFileSelectionChanged;
 
 protected:
 	wxFlexGridSizer * m_groupPropertiesSizer;

@@ -89,7 +89,7 @@ bool ColourTable::isModified() const {
 	return m_modified;
 }
 
-void ColourTable::setModified(bool value) {
+void ColourTable::setModified(bool value) const {
 	m_modified = value;
 
 	modified(*this);

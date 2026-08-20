@@ -54,26 +54,20 @@ const std::string PaletteKPL::MIME_TYPE("application/x-krita-palette");
 const std::string PaletteKPL::COLOR_SET_VERSION("1.0");
 
 PaletteKPL::PaletteKPL(std::string_view comment, uint8_t numberOfColumns, bool readOnly, std::unique_ptr<ZipArchive> archive, const std::string & filePath)
-	: Palette(filePath)
+	: Palette(std::make_unique<ColourTable>(), filePath)
 	, m_comment(comment)
 	, m_numberOfColumns(numberOfColumns)
 	, m_readOnly(readOnly)
-	, m_archive(archive != nullptr ? std::move(archive) : ZipArchive::createNew())
-	, m_colourTable(std::make_shared<ColourTable>()) {
-	updateParent();
-	connectSignals();
+	, m_archive(archive != nullptr ? std::move(archive) : ZipArchive::createNew()) {
 	ensureRequiredFiles();
 }
 
 PaletteKPL::PaletteKPL(std::unique_ptr<ColourTable> colourTable, std::string_view comment, uint8_t numberOfColumns, bool readOnly, std::unique_ptr<ZipArchive> archive, const std::string & filePath)
-	: Palette(filePath)
+	: Palette(colourTable != nullptr ? std::move(colourTable) : std::make_unique<ColourTable>(), filePath)
 	, m_comment(comment)
 	, m_numberOfColumns(numberOfColumns)
 	, m_readOnly(readOnly)
-	, m_archive(archive != nullptr ? std::move(archive) : ZipArchive::createNew())
-	, m_colourTable(colourTable != nullptr ? std::move(colourTable) : std::make_shared<ColourTable>()) {
-	updateParent();
-	connectSignals();
+	, m_archive(archive != nullptr ? std::move(archive) : ZipArchive::createNew()) {
 	ensureRequiredFiles();
 }
 
@@ -82,10 +76,7 @@ PaletteKPL::PaletteKPL(PaletteKPL && palette) noexcept
 	, m_comment(std::move(palette.m_comment))
 	, m_numberOfColumns(palette.m_numberOfColumns)
 	, m_readOnly(palette.m_readOnly)
-	, m_archive(std::move(palette.m_archive))
-	, m_colourTable(std::move(palette.m_colourTable)) {
-	updateParent();
-	connectSignals();
+	, m_archive(std::move(palette.m_archive)) {
 	ensureRequiredFiles();
 }
 
@@ -94,10 +85,7 @@ PaletteKPL::PaletteKPL(const PaletteKPL & palette)
 	, m_comment(std::move(palette.m_comment))
 	, m_numberOfColumns(palette.m_numberOfColumns)
 	, m_readOnly(palette.m_readOnly)
-	, m_archive(ZipArchive::createNew())
-	, m_colourTable(palette.m_colourTable) {
-	updateParent();
-	connectSignals();
+	, m_archive(ZipArchive::createNew()) {
 	ensureRequiredFiles();
 }
 
@@ -105,16 +93,11 @@ PaletteKPL & PaletteKPL::operator = (PaletteKPL && palette) noexcept {
 	if(this != &palette) {
 		Palette::operator = (std::move(palette));
 
-		m_colourTableModifiedConnection.disconnect();
-
 		m_comment = std::move(palette.m_comment);
 		m_numberOfColumns = palette.m_numberOfColumns;
 		m_readOnly = palette.m_readOnly;
 		m_archive = std::move(palette.m_archive);
-		m_colourTable = std::move(palette.m_colourTable);
 
-		updateParent();
-		connectSignals();
 		ensureRequiredFiles();
 	}
 
@@ -124,24 +107,17 @@ PaletteKPL & PaletteKPL::operator = (PaletteKPL && palette) noexcept {
 PaletteKPL & PaletteKPL::operator = (const PaletteKPL & palette) {
 	Palette::operator = (palette);
 
-	m_colourTableModifiedConnection.disconnect();
-
 	m_comment = palette.m_comment;
 	m_numberOfColumns = palette.m_numberOfColumns;
 	m_readOnly = palette.m_readOnly;
 	m_archive = ZipArchive::createNew();
-	m_colourTable = palette.m_colourTable;
 
-	updateParent();
-	connectSignals();
 	ensureRequiredFiles();
 
 	return *this;
 }
 
-PaletteKPL::~PaletteKPL() {
-	m_colourTableModifiedConnection.disconnect();
-}
+PaletteKPL::~PaletteKPL() { }
 
 const std::vector<std::string> & PaletteKPL::getFileFormatExtensions() const {
 	return FILE_FORMAT_EXTENSIONS;
@@ -152,19 +128,15 @@ const std::string & PaletteKPL::getFileFormatName() const {
 }
 
 void PaletteKPL::setModified(bool modified) const {
-	if(!modified) {
-		m_colourTable->setModified(false);
-	}
-
 	Palette::setModified(modified);
 }
 
 const std::string & PaletteKPL::getName() const {
-	return m_colourTable->getName();
+	return m_colourTables.front()->getName();
 }
 
 void PaletteKPL::setName(std::string_view name) {
-	m_colourTable->setName(name);
+	m_colourTables.front()->setName(name);
 }
 
 const std::string & PaletteKPL::getComment() const {
@@ -207,14 +179,6 @@ void PaletteKPL::setReadOnly(bool readOnly) {
 	m_readOnly = readOnly;
 
 	setModified(true);
-}
-
-std::shared_ptr<ColourTable> PaletteKPL::getColourTable(uint8_t colourTableIndex) const {
-	if(colourTableIndex != 0) {
-		return nullptr;
-	}
-
-	return m_colourTable;
 }
 
 std::unique_ptr<PaletteKPL> PaletteKPL::readFrom(const ByteBuffer & byteBuffer) {
@@ -540,12 +504,14 @@ bool PaletteKPL::writeTo(ByteBuffer & byteBuffer) const {
 }
 
 bool PaletteKPL::updateColorSet() const {
+	std::shared_ptr<ColourTable> colourTable(m_colourTables.front());
+
 	tinyxml2::XMLDocument document;
 
 	tinyxml2::XMLElement * colorSetElement = document.NewElement(KRITA_PALETTE_COLOR_SET_ELEMENT_NAME.c_str());
 
-	if(m_colourTable->hasName()) {
-		colorSetElement->SetAttribute(KRITA_PALETTE_COLOR_SET_ELEMENT_NAME_ATTRIBUTE_NAME.c_str(), m_colourTable->getName().c_str());
+	if(colourTable->hasName()) {
+		colorSetElement->SetAttribute(KRITA_PALETTE_COLOR_SET_ELEMENT_NAME_ATTRIBUTE_NAME.c_str(), colourTable->getName().c_str());
 	}
 
 	if(!m_comment.empty()) {
@@ -556,7 +522,7 @@ bool PaletteKPL::updateColorSet() const {
 	colorSetElement->SetAttribute(KRITA_PALETTE_COLOR_SET_ELEMENT_READ_ONLY_ATTRIBUTE_NAME.c_str(), m_readOnly ? "true" : "false");
 	colorSetElement->SetAttribute(KRITA_PALETTE_COLOR_SET_ELEMENT_COLUMNS_ATTRIBUTE_NAME.c_str(), m_numberOfColumns);
 
-	const std::vector<Colour> & colours = m_colourTable->getColours();
+	const std::vector<Colour> & colours = colourTable->getColours();
 	tinyxml2::XMLElement * colorSetEntryElement = nullptr;
 	tinyxml2::XMLElement * colorSetEntryRGBElement = nullptr;
 	tinyxml2::XMLElement * colorSetEntryPositionElement = nullptr;
@@ -633,29 +599,15 @@ void PaletteKPL::ensureRequiredFiles() const {
 	updateColorSet();
 }
 
-void PaletteKPL::onColourTableModified(ColourTable & colourTable) {
-	if(colourTable.isModified()) {
-		setModified(true);
-	}
-}
-
-void PaletteKPL::connectSignals() {
-	m_colourTableModifiedConnection = m_colourTable->modified.connect(std::bind(&PaletteKPL::onColourTableModified, this, std::placeholders::_1));
-}
-
-void PaletteKPL::updateParent() {
-	m_colourTable->setParent(this);
-}
-
 bool PaletteKPL::operator == (const PaletteKPL & palette) const {
 	if(this == &palette) {
 		return true;
 	}
 
-	return Utilities::areStringsEqual(m_comment, palette.m_comment) &&
+	return Palette::operator == (palette) &&
 		   m_numberOfColumns == palette.m_numberOfColumns &&
 		   m_readOnly == palette.m_readOnly &&
-		   *m_colourTable == *palette.m_colourTable;
+		   Utilities::areStringsEqual(m_comment, palette.m_comment);
 }
 
 bool PaletteKPL::operator != (const PaletteKPL & palette) const {

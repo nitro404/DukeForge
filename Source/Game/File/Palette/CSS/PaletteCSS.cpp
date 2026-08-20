@@ -16,36 +16,24 @@ const std::vector<std::string> PaletteCSS::FILE_FORMAT_EXTENSIONS({ "CSS" });
 const std::string PaletteCSS::FILE_FORMAT_NAME("Cascading StyleSheet Palette");
 
 PaletteCSS::PaletteCSS(Format format, std::string_view comment, const std::string & filePath)
-	: Palette(filePath)
+	: Palette(std::make_unique<ColourTable>(), filePath)
 	, m_format(format)
-	, m_comment(comment)
-	, m_colourTable(std::make_shared<ColourTable>()) {
-	updateParent();
-}
+	, m_comment(comment) { }
 
 PaletteCSS::PaletteCSS(std::unique_ptr<ColourTable> colourTable, Format format, std::string_view comment, const std::string & filePath)
-	: Palette(filePath)
+	: Palette(colourTable != nullptr ? std::move(colourTable) : std::make_unique<ColourTable>(), filePath)
 	, m_format(format)
-	, m_comment(comment)
-	, m_colourTable(colourTable != nullptr ? std::move(colourTable) : std::make_shared<ColourTable>()) {
-	updateParent();
-}
+	, m_comment(comment) { }
 
 PaletteCSS::PaletteCSS(PaletteCSS && palette) noexcept
 	: Palette(std::move(palette))
 	, m_format(palette.m_format)
-	, m_comment(std::move(palette.m_comment))
-	, m_colourTable(std::move(palette.m_colourTable)) {
-	updateParent();
-}
+	, m_comment(std::move(palette.m_comment)) { }
 
 PaletteCSS::PaletteCSS(const PaletteCSS & palette)
 	: Palette(palette)
 	, m_format(palette.m_format)
-	, m_comment(palette.m_comment)
-	, m_colourTable(palette.m_colourTable) {
-	updateParent();
-}
+	, m_comment(palette.m_comment) { }
 
 PaletteCSS & PaletteCSS::operator = (PaletteCSS && palette) noexcept {
 	if(this != &palette) {
@@ -53,9 +41,6 @@ PaletteCSS & PaletteCSS::operator = (PaletteCSS && palette) noexcept {
 
 		m_format = palette.m_format;
 		m_comment = std::move(palette.m_comment);
-		m_colourTable = std::move(palette.m_colourTable);
-
-		updateParent();
 	}
 
 	return *this;
@@ -66,9 +51,6 @@ PaletteCSS & PaletteCSS::operator = (const PaletteCSS & palette) {
 
 	m_format = palette.m_format;
 	m_comment = palette.m_comment;
-	m_colourTable = palette.m_colourTable;
-
-	updateParent();
 
 	return *this;
 }
@@ -105,14 +87,6 @@ void PaletteCSS::setComment(std::string_view comment) {
 
 void PaletteCSS::clearComment() {
 	m_comment.clear();
-}
-
-std::shared_ptr<ColourTable> PaletteCSS::getColourTable(uint8_t colourTableIndex) const {
-	if(colourTableIndex != 0) {
-		return nullptr;
-	}
-
-	return m_colourTable;
 }
 
 std::unique_ptr<PaletteCSS> PaletteCSS::readFrom(const ByteBuffer & byteBuffer) {
@@ -230,7 +204,7 @@ bool PaletteCSS::writeTo(ByteBuffer & byteBuffer) const {
 		byteBuffer.writeLine(fmt::format("/* {} */", m_comment));
 	}
 
-	const std::vector<Colour> & colours = m_colourTable->getColours();
+	const std::vector<Colour> & colours = m_colourTables.front()->getColours();
 
 	for(size_t i = 0; i < colours.size(); i++) {
 		const Colour & colour = colours[i];
@@ -266,7 +240,7 @@ size_t PaletteCSS::getSizeInBytes() const {
 		paletteSize += m_comment.length() + 7;
 	}
 
-	const std::vector<Colour> & colours = m_colourTable->getColours();
+	const std::vector<Colour> & colours = m_colourTables.front()->getColours();
 
 	for(size_t i = 0; i < colours.size(); i++) {
 		const Colour & colour = colours[i];
@@ -287,18 +261,14 @@ size_t PaletteCSS::getSizeInBytes() const {
 	return paletteSize;
 }
 
-void PaletteCSS::updateParent() {
-	m_colourTable->setParent(this);
-}
-
 bool PaletteCSS::operator == (const PaletteCSS & palette) const {
 	if(this == &palette) {
 		return true;
 	}
 
-	return m_format == palette.m_format &&
-		   Utilities::areStringsEqual(m_comment, palette.m_comment) &&
-		   *m_colourTable == *palette.m_colourTable;
+	return Palette::operator == (palette) &&
+		   m_format == palette.m_format &&
+		   Utilities::areStringsEqual(m_comment, palette.m_comment);
 }
 
 bool PaletteCSS::operator != (const PaletteCSS & palette) const {

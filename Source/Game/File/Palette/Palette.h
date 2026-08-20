@@ -31,15 +31,18 @@ public:
 	std::optional<Colour> getColour(uint8_t x, uint8_t y, uint8_t colourTableIndex = 0) const;
 	bool setColour(uint8_t x, uint8_t y, const Colour & colour, uint8_t colourTableIndex = 0);
 	bool setColour(uint8_t colourIndex, const Colour & colour, uint8_t colourTableIndex = 0);
-	virtual std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const = 0;
-	std::vector<std::shared_ptr<ColourTable>> getAllColourTables() const;
+	std::shared_ptr<ColourTable> getColourTable(uint8_t colourTableIndex = 0) const;
+	const std::vector<std::shared_ptr<ColourTable>> & getAllColourTables() const;
 	bool updateColourTable(uint8_t colourTableIndex, const ColourTable & colourTable);
 	bool updateAllColourTables(const std::vector<std::shared_ptr<const ColourTable>> & colourTables);
 	bool fillColourTableWithColour(const Colour & colour, uint8_t colourTableIndex = 0);
 	bool fillAllColourTablesWithColour(const Colour & colour);
-	virtual uint8_t numberOfColourTables() const;
+	uint8_t numberOfColourTables() const;
 	const std::string & getColourTableName(uint8_t colourTableIndex = 0) const;
 	static bool isValid(const Palette * palette, bool verifyParent = true);
+
+	bool operator == (const Palette & palette) const;
+	bool operator != (const Palette & palette) const;
 
 	// GameFile Virtuals
 	void addMetadata(std::vector<std::pair<std::string, std::string>> & metadata) const override;
@@ -49,13 +52,17 @@ public:
 	static constexpr uint8_t PALETTE_HEIGHT = 16;
 
 protected:
-	Palette(const std::string & filePath = {});
+	Palette(const std::string & filePath);
+	Palette(std::unique_ptr<ColourTable> colourTable = nullptr, const std::string & filePath = {});
+	Palette(std::vector<std::unique_ptr<ColourTable>> && colourTables, const std::string & filePath = {});
 
 	// GameFile Virtruals
 	void setModified(bool modified) const override;
 
+	std::vector<std::shared_ptr<ColourTable>> m_colourTables;
+
 private:
-	void onColourTableModified(ColourTable & colourTable);
+	void onColourTableModified(const ColourTable & colourTable);
 	void connectSignals();
 	void updateParent();
 
