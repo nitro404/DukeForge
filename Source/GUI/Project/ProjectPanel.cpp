@@ -78,6 +78,20 @@ bool ProjectPanel::hasPanelWithGameFile(const GameFile * gameFile) const {
 	return false;
 }
 
+bool ProjectPanel::hasPanelWithGameFilePath(const std::string & filePath) const {
+	if(filePath.empty()) {
+		return false;
+	}
+
+	for(size_t i = 0; i < m_notebook->GetPageCount(); i++) {
+		if(Utilities::areStringsEqual(getGameFile(i)->getFilePath(), filePath)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 size_t ProjectPanel::indexOfGameFilePanel(const GameFilePanel * gameFilePanel) const {
 	if(gameFilePanel == nullptr) {
 		return std::numeric_limits<size_t>::max();
@@ -206,29 +220,27 @@ bool ProjectPanel::updateGameFilePanelName(size_t gameFilePanelIndex) {
 	return true;
 }
 
-bool ProjectPanel::addGameFilePanel(std::unique_ptr<GameFilePanel> gameFilePanel) {
-	if(gameFilePanel == nullptr || hasGameFilePanel(gameFilePanel.get())) {
-		return false;
+void ProjectPanel::addGameFilePanel(GameFilePanel * gameFilePanel) {
+	if(gameFilePanel == nullptr) {
+		return;
 	}
 
 	SignalConnectionGroup signalConnections(
 		gameFilePanel->gameFileModified.connect(std::bind(&ProjectPanel::onGameFileModified, this, std::placeholders::_1))
 	);
 
-	if(dynamic_cast<const GroupPanel *>(gameFilePanel.get()) != nullptr) {
-		static_cast<GroupPanel *>(gameFilePanel.get())->groupFileSelectionChanged.connect(std::bind(&ProjectPanel::onGroupFileSelectionChanged, this, std::placeholders::_1));
+	if(dynamic_cast<const GroupPanel *>(gameFilePanel) != nullptr) {
+		static_cast<GroupPanel *>(gameFilePanel)->groupFileSelectionChanged.connect(std::bind(&ProjectPanel::onGroupFileSelectionChanged, this, std::placeholders::_1));
 	}
 
 	m_gameFilePanelConnections.push_back(std::move(signalConnections));
 
 	const std::string gameFilePanelName(gameFilePanel->getPanelName());
 
-	m_notebook->AddPage(gameFilePanel.release(), gameFilePanelName);
+	m_notebook->AddPage(gameFilePanel, gameFilePanelName);
 	m_notebook->ChangeSelection(m_notebook->GetPageCount() - 1);
 
 	activeGameFilePanelChanged(*this, getCurrentGameFilePanel());
-
-	return true;
 }
 
 bool ProjectPanel::newGameFile() {
@@ -271,16 +283,14 @@ bool ProjectPanel::newGameFile() {
 		return false;
 	}
 
-	std::unique_ptr<GameFilePanel> newGameFilePanel(gameFilePanelFactoryRegistry->createNewGameFilePanel(std::move(newGameFile), m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL));
+	GameFilePanel * newGameFilePanel = gameFilePanelFactoryRegistry->createNewGameFilePanel(std::move(newGameFile), m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	if(newGameFilePanel == nullptr) {
 		WXUtilities::showErrorMessage(fmt::format("Failed to create new '{}' game file panel.", selectedGameFileFormatName), "Game File Panel Creation Failed", this);
 		return false;
 	}
 
-	if(!addGameFilePanel(std::move(newGameFilePanel))) {
-		return false;
-	}
+	addGameFilePanel(newGameFilePanel);
 
 	return true;
 }
@@ -321,16 +331,18 @@ bool ProjectPanel::openGameFile(const std::string & filePath) {
 		return false;
 	}
 
-	std::unique_ptr<GameFilePanel> gameFilePanel(gameFilePanelFactoryRegistry->createNewGameFilePanel(std::move(gameFile), m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL));
+	if(hasPanelWithGameFilePath(gameFile->getFilePath())) {
+		return false;
+	}
+
+	GameFilePanel * gameFilePanel = gameFilePanelFactoryRegistry->createNewGameFilePanel(std::move(gameFile), m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	if(gameFilePanel == nullptr) {
 		WXUtilities::showErrorMessage(fmt::format("Failed to create new '{}' game file panel for file: '{}'.", gameFile->getFileFormatName(), filePath), "Game File Panel Creation Failed", this);
 		return false;
 	}
 
-	if(!addGameFilePanel(std::move(gameFilePanel))) {
-		return false;
-	}
+	addGameFilePanel(gameFilePanel);
 
 	return true;
 }
@@ -410,10 +422,12 @@ bool ProjectPanel::createGroupFromDirectory(const std::string & directoryPath) {
 		return false;
 	}
 
-	std::unique_ptr<GroupPanel> groupPanel(std::make_unique<GroupPanel>(std::move(newGroup), m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL));
+	GroupPanel * groupPanel = new GroupPanel(std::move(newGroup), m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	std::shared_ptr<const Group> sharedGroup(groupPanel->getGroup());
 
-	return addGameFilePanel(std::move(groupPanel));
+	addGameFilePanel(groupPanel);
+
+	return true;
 }
 
 bool ProjectPanel::createGroupFromDirectory() {

@@ -40,7 +40,7 @@ public:
 	bool updateProjectPanel(size_t projectPanelIndex);
 	void updateProjectPanelNames();
 	bool updateProjectPanelName(size_t projectPanelIndex);
-	bool addProjectPanel(std::unique_ptr<ProjectPanel> projectPanel);
+	void addProjectPanel(ProjectPanel * projectPanel);
 	bool closeProjectPanel(size_t index);
 	bool closeCurrentProjectPanel();
 	bool closeAllProjectPanels();

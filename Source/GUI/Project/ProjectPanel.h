@@ -32,6 +32,7 @@ public:
 	std::string getPanelName() const;
 	bool hasGameFilePanel(const GameFilePanel * gameFilePanel) const;
 	bool hasPanelWithGameFile(const GameFile * gameFile) const;
+	bool hasPanelWithGameFilePath(const std::string & filePath) const;
 	size_t indexOfGameFilePanel(const GameFilePanel * gameFilePanel) const;
 	size_t indexOfPanelWithGameFile(const GameFile * gameFile) const;
 	size_t indexOfPanelWithGameFileFilePath(const std::string & filePath) const;
@@ -48,7 +49,7 @@ public:
 	void updateGameFilePanelNames();
 	bool updateGameFilePanelName(size_t gameFilePanelIndex);
 
-	bool addGameFilePanel(std::unique_ptr<GameFilePanel> gameFilePanel);
+	void addGameFilePanel(GameFilePanel * gameFilePanel);
 	bool newGameFile();
 	bool openGameFile(const std::string & filePath);
 	size_t openGameFiles();

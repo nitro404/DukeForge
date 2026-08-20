@@ -21,13 +21,13 @@ public:
 	bool hasFactory(const std::string & fileNameOrExtension) const;
 	std::string getFactoryName(const std::string & fileNameOrExtension) const;
 	std::vector<std::string> getFactoryFileExtensions() const;
-	bool setFactory(const std::string & fileNameOrExtension, const std::string & name, std::type_index gameFileType, std::function<std::unique_ptr<GameFilePanel>(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction);
-	size_t setFactory(const std::vector<std::string> & fileNamesOrExtensions, const std::string & name, std::type_index gameFileType, std::function<std::unique_ptr<GameFilePanel>(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction);
+	bool setFactory(const std::string & fileNameOrExtension, const std::string & name, std::type_index gameFileType, std::function<GameFilePanel *(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction);
+	size_t setFactory(const std::vector<std::string> & fileNamesOrExtensions, const std::string & name, std::type_index gameFileType, std::function<GameFilePanel *(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction);
 	bool removeFactory(const std::string & fileNameOrExtension);
 	void resetFactories();
 	bool areDefaultFactoriesAssigned() const;
 	void assignDefaultFactories();
-	std::unique_ptr<GameFilePanel> createNewGameFilePanel(std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID = wxID_ANY, const wxPoint & position = wxDefaultPosition, const wxSize & size = wxDefaultSize, long style = wxTAB_TRAVERSAL | wxNO_BORDER);
+	GameFilePanel * createNewGameFilePanel(std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID = wxID_ANY, const wxPoint & position = wxDefaultPosition, const wxSize & size = wxDefaultSize, long style = wxTAB_TRAVERSAL | wxNO_BORDER);
 	std::vector<std::string> getAllFileFormatNames() const;
 	std::vector<std::string> getAllFileFormatFileExtensions() const;
 	std::vector<std::pair<std::string, std::string>> getAllFileFormatNamesAndExtensions() const;
@@ -40,7 +40,7 @@ private:
 	struct GameFilePanelFactoryData {
 		std::string name;
 		std::type_index gameFileType;
-		std::function<std::unique_ptr<GameFilePanel>(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction;
+		std::function<GameFilePanel *(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction;
 	};
 
 	typedef std::map<std::string, GameFilePanelFactoryData> GameFilePanelFactoryMap;

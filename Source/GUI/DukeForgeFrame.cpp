@@ -136,7 +136,7 @@ bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
 
 	m_notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP, "Main");
 
-	addProjectPanel(std::make_unique<ProjectPanel>(m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL));
+	addProjectPanel(new ProjectPanel(m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL));
 
 	m_settingsManagerPanel = new SettingsManagerPanel(dukeForge, m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	m_notebook->AddPage(m_settingsManagerPanel, "Settings");
@@ -287,9 +287,9 @@ bool DukeForgeFrame::updateProjectPanelName(size_t projectPanelIndex) {
 	return true;
 }
 
-bool DukeForgeFrame::addProjectPanel(std::unique_ptr<ProjectPanel> projectPanel) {
-	if(projectPanel == nullptr || hasProjectPanel(projectPanel.get())) {
-		return false;
+void DukeForgeFrame::addProjectPanel(ProjectPanel * projectPanel) {
+	if(projectPanel == nullptr) {
+		return;
 	}
 
 	size_t projectPanelInsertionIndex = 0u;
@@ -308,10 +308,8 @@ bool DukeForgeFrame::addProjectPanel(std::unique_ptr<ProjectPanel> projectPanel)
 
 	const std::string projectPanelName(projectPanel->getPanelName());
 
-	m_notebook->InsertPage(projectPanelInsertionIndex, projectPanel.release(), projectPanelName);
+	m_notebook->InsertPage(projectPanelInsertionIndex, projectPanel, projectPanelName);
 	m_notebook->ChangeSelection(m_notebook->GetPageCount() - 1);
-
-	return true;
 }
 
 bool DukeForgeFrame::closeProjectPanel(size_t projectPanelIndex) {

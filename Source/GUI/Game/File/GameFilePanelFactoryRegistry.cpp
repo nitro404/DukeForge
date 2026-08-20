@@ -53,7 +53,7 @@ std::vector<std::string> GameFilePanelFactoryRegistry::getFactoryFileExtensions(
 	return factoryFileExtensions;
 }
 
-bool GameFilePanelFactoryRegistry::setFactory(const std::string & fileNameOrExtension, const std::string & name, std::type_index gameFilePanelType, std::function<std::unique_ptr<GameFilePanel>(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction) {
+bool GameFilePanelFactoryRegistry::setFactory(const std::string & fileNameOrExtension, const std::string & name, std::type_index gameFilePanelType, std::function<GameFilePanel *(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction) {
 	std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 	if(fileNameOrExtension.empty() || createNewGameFilePanelFunction == nullptr) {
@@ -75,7 +75,7 @@ bool GameFilePanelFactoryRegistry::setFactory(const std::string & fileNameOrExte
 	return true;
 }
 
-size_t GameFilePanelFactoryRegistry::setFactory(const std::vector<std::string> & fileNamesOrExtensions, const std::string & name, std::type_index gameFilePanelType, std::function<std::unique_ptr<GameFilePanel>(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction) {
+size_t GameFilePanelFactoryRegistry::setFactory(const std::vector<std::string> & fileNamesOrExtensions, const std::string & name, std::type_index gameFilePanelType, std::function<GameFilePanel *(std::unique_ptr<GameFile>, wxWindow *, wxWindowID, const wxPoint &, const wxSize &, long)> createNewGameFilePanelFunction) {
 	std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 	size_t numberOfFactoriesSet = 0;
@@ -130,22 +130,22 @@ void GameFilePanelFactoryRegistry::assignDefaultFactories() {
 
 	setFactory(GroupGRP::FILE_FORMAT_EXTENSIONS, GroupGRP::FILE_FORMAT_NAME, std::type_index(typeid(GroupPanelGRP)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
 		if(dynamic_cast<const GroupGRP *>(gameFile.get()) == nullptr) {
-			return std::unique_ptr<GroupPanelGRP>();
+			return static_cast<GroupPanelGRP *>(nullptr);
 		}
 
-		return std::make_unique<GroupPanelGRP>(std::unique_ptr<GroupGRP>(static_cast<GroupGRP *>(gameFile.release())), parent, windowID, position, size, style);
+		return new GroupPanelGRP(std::unique_ptr<GroupGRP>(static_cast<GroupGRP *>(gameFile.release())), parent, windowID, position, size, style);
 	});
 
 	setFactory(GroupSSI::FILE_FORMAT_EXTENSIONS, GroupSSI::FILE_FORMAT_NAME, std::type_index(typeid(GroupPanelSSI)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
 		if(dynamic_cast<const GroupSSI *>(gameFile.get()) == nullptr) {
-			return std::unique_ptr<GroupPanelSSI>();
+			return static_cast<GroupPanelSSI *>(nullptr);
 		}
 
-		return std::make_unique<GroupPanelSSI>(std::unique_ptr<GroupSSI>(static_cast<GroupSSI *>(gameFile.release())), parent, windowID, position, size, style);
+		return new GroupPanelSSI(std::unique_ptr<GroupSSI>(static_cast<GroupSSI *>(gameFile.release())), parent, windowID, position, size, style);
 	});
 }
 
-std::unique_ptr<GameFilePanel> GameFilePanelFactoryRegistry::createNewGameFilePanel(std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
+GameFilePanel * GameFilePanelFactoryRegistry::createNewGameFilePanel(std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
 	std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 	if(gameFile == nullptr) {
