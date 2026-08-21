@@ -290,7 +290,7 @@ bool Palette::fillAllColourTablesWithColour(const Colour & colour) {
 }
 
 uint8_t Palette::numberOfColourTables() const {
-	return 1;
+	return m_colourTables.size();
 }
 
 const std::string & Palette::getColourTableName(uint8_t colourTableIndex) const {
