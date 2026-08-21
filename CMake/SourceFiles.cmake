@@ -117,6 +117,12 @@ set(GUI_SOURCE_FILES
 	GUI/Game/File/Group/SSI/GroupPanelSSI.cpp
 	GUI/Game/File/Group/SSI/SunstormInteractiveMetadataPanel.h
 	GUI/Game/File/Group/SSI/SunstormInteractiveMetadataPanel.cpp
+	GUI/Game/File/Palette/ColourTablePanel.h
+	GUI/Game/File/Palette/ColourTablePanel.cpp
+	GUI/Game/File/Palette/PalettePanel.h
+	GUI/Game/File/Palette/PalettePanel.cpp
+	GUI/Game/File/Palette/DAT/PalettePanelDAT.h
+	GUI/Game/File/Palette/DAT/PalettePanelDAT.cpp
 	GUI/Hyperlink.h
 	GUI/Hyperlink.cpp
 	GUI/MetadataPanel.h
