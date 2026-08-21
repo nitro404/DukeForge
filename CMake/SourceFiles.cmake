@@ -131,6 +131,8 @@ set(GUI_SOURCE_FILES
 	GUI/Game/File/Palette/GPL/PalettePanelGPL.cpp
 	GUI/Game/File/Palette/JASC/PalettePanelJASC.h
 	GUI/Game/File/Palette/JASC/PalettePanelJASC.cpp
+	GUI/Game/File/Palette/KPL/PalettePanelKPL.h
+	GUI/Game/File/Palette/KPL/PalettePanelKPL.cpp
 	GUI/Hyperlink.h
 	GUI/Hyperlink.cpp
 	GUI/MetadataPanel.h

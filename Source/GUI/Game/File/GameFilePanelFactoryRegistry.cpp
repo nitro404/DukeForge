@@ -7,11 +7,13 @@
 #include "Game/File/Palette/DAT/PaletteDAT.h"
 #include "Game/File/Palette/GPL/PaletteGPL.h"
 #include "Game/File/Palette/JASC/PaletteJASC.h"
+#include "Game/File/Palette/KPL/PaletteKPL.h"
 #include "GUI/Game/File/Palette/ACT/PalettePanelACT.h"
 #include "GUI/Game/File/Palette/CSS/PalettePanelCSS.h"
 #include "GUI/Game/File/Palette/DAT/PalettePanelDAT.h"
 #include "GUI/Game/File/Palette/GPL/PalettePanelGPL.h"
 #include "GUI/Game/File/Palette/JASC/PalettePanelJASC.h"
+#include "GUI/Game/File/Palette/KPL/PalettePanelKPL.h"
 #include "GUI/Game/File/Group/GRP/GroupPanelGRP.h"
 #include "GUI/Game/File/Group/SSI/GroupPanelSSI.h"
 #include "GUI/WXUtilities.h"
@@ -176,6 +178,14 @@ void GameFilePanelFactoryRegistry::assignDefaultFactories() {
 		}
 
 		return new PalettePanelJASC(std::unique_ptr<PaletteJASC>(static_cast<PaletteJASC *>(gameFile.release())), parent, windowID, position, size, style);
+	});
+
+	setFactory(PaletteKPL::FILE_FORMAT_EXTENSIONS, PaletteKPL::FILE_FORMAT_NAME, std::type_index(typeid(PalettePanelKPL)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
+		if(dynamic_cast<const PaletteKPL *>(gameFile.get()) == nullptr) {
+			return static_cast<PalettePanelKPL *>(nullptr);
+		}
+
+		return new PalettePanelKPL(std::unique_ptr<PaletteKPL>(static_cast<PaletteKPL *>(gameFile.release())), parent, windowID, position, size, style);
 	});
 
 	setFactory(GroupGRP::FILE_FORMAT_EXTENSIONS, GroupGRP::FILE_FORMAT_NAME, std::type_index(typeid(GroupPanelGRP)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
