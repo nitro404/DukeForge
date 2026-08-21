@@ -2,7 +2,9 @@
 
 #include "Game/File/Group/GRP/GroupGRP.h"
 #include "Game/File/Group/SSI/GroupSSI.h"
+#include "Game/File/Palette/ACT/PaletteACT.h"
 #include "Game/File/Palette/DAT/PaletteDAT.h"
+#include "GUI/Game/File/Palette/ACT/PalettePanelACT.h"
 #include "GUI/Game/File/Palette/DAT/PalettePanelDAT.h"
 #include "GUI/Game/File/Group/GRP/GroupPanelGRP.h"
 #include "GUI/Game/File/Group/SSI/GroupPanelSSI.h"
@@ -129,6 +131,14 @@ bool GameFilePanelFactoryRegistry::areDefaultFactoriesAssigned() const {
 
 void GameFilePanelFactoryRegistry::assignDefaultFactories() {
 	std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+	setFactory(PaletteACT::FILE_FORMAT_EXTENSIONS, PaletteACT::FILE_FORMAT_NAME, std::type_index(typeid(PalettePanelACT)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
+		if(dynamic_cast<const PaletteACT *>(gameFile.get()) == nullptr) {
+			return static_cast<PalettePanelACT *>(nullptr);
+		}
+
+		return new PalettePanelACT(std::unique_ptr<PaletteACT>(static_cast<PaletteACT *>(gameFile.release())), parent, windowID, position, size, style);
+	});
 
 	setFactory(PaletteDAT::FILE_FORMAT_EXTENSIONS, PaletteDAT::FILE_FORMAT_NAME, std::type_index(typeid(PalettePanelDAT)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
 		if(dynamic_cast<const PaletteDAT *>(gameFile.get()) == nullptr) {
