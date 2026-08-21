@@ -21,6 +21,9 @@ public:
 	ColourTablePanel(std::shared_ptr<ColourTable> colourTable, wxWindow * parent, wxWindowID windowID = wxID_ANY, const wxPoint & position = wxDefaultPosition, const wxSize & size = wxDefaultSize, long style = wxTAB_TRAVERSAL | wxNO_BORDER);
 	~ColourTablePanel() override;
 
+	static constexpr uint8_t COLOUR_TABLE_RENDER_WIDTH = 32;
+	static constexpr uint8_t COLOUR_TABLE_RENDER_HEIGHT = 8;
+
 private:
 	size_t getVerticalOffset() const;
 	void updateColourTableNameLabel();

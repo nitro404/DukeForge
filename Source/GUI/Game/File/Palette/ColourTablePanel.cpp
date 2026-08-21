@@ -11,17 +11,15 @@
 #include <wx/brush.h>
 
 static constexpr uint8_t PIXEL_SCALE = 24;
-static constexpr uint8_t PALETTE_RENDER_WIDTH = 32;
-static constexpr uint8_t PALETTE_RENDER_HEIGHT = 8;
 
 ColourTablePanel::ColourTablePanel(std::shared_ptr<ColourTable> colourTable, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style)
 	: wxPanel(parent, windowID, position, size, style)
 	, m_colourTable(colourTable) {
 	SetBackgroundColour(parent->GetBackgroundColour());
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
-	SetMinSize(wxSize(PALETTE_RENDER_WIDTH * PIXEL_SCALE, PALETTE_RENDER_HEIGHT * PIXEL_SCALE));
+	SetMinSize(wxSize(COLOUR_TABLE_RENDER_WIDTH * PIXEL_SCALE, COLOUR_TABLE_RENDER_HEIGHT * PIXEL_SCALE));
 
-	m_colourTableNameLabel = new wxStaticText(this, wxID_ANY, m_colourTable->getName(), wxDefaultPosition, wxSize(PALETTE_RENDER_WIDTH * PIXEL_SCALE, -1), wxALIGN_CENTER);
+	m_colourTableNameLabel = new wxStaticText(this, wxID_ANY, m_colourTable->getName(), wxDefaultPosition, wxSize(COLOUR_TABLE_RENDER_WIDTH * PIXEL_SCALE, -1), wxALIGN_CENTER);
 	m_colourTableNameLabel->SetFont(m_colourTableNameLabel->GetFont().MakeBold().MakeLarger().MakeLarger());
 
 	// Note: For some reason ampersands are not rendered if you assign the text contents upon creation rather than through the set label text function
@@ -47,7 +45,7 @@ void ColourTablePanel::updateColourTableNameLabel() {
 	m_colourTableNameLabel->SetLabelText(wxString::FromUTF8(m_colourTable->getName()));
 	m_colourTableNameLabel->Show(m_colourTable->hasName());
 
-	SetMinSize(wxSize(PALETTE_RENDER_WIDTH * PIXEL_SCALE, (PALETTE_RENDER_HEIGHT * PIXEL_SCALE) + getVerticalOffset()));
+	SetMinSize(wxSize(COLOUR_TABLE_RENDER_WIDTH * PIXEL_SCALE, (COLOUR_TABLE_RENDER_HEIGHT * PIXEL_SCALE) + getVerticalOffset()));
 }
 
 void ColourTablePanel::onColourTableModified(const ColourTable & colourTable) {
@@ -63,18 +61,18 @@ void ColourTablePanel::onPaint(wxPaintEvent & event) {
 	for(size_t i = 0; i < m_colourTable->numberOfColours(); i++) {
 		paintContext.SetBrush(wxBrush(WXUtilities::createWXColour(m_colourTable->getColour(i))));
 		paintContext.SetPen(*wxTRANSPARENT_PEN);
-		paintContext.DrawRectangle((i % PALETTE_RENDER_WIDTH) * PIXEL_SCALE, ((i / PALETTE_RENDER_WIDTH) * PIXEL_SCALE) + getVerticalOffset(), PIXEL_SCALE, PIXEL_SCALE);
+		paintContext.DrawRectangle((i % COLOUR_TABLE_RENDER_WIDTH) * PIXEL_SCALE, ((i / COLOUR_TABLE_RENDER_WIDTH) * PIXEL_SCALE) + getVerticalOffset(), PIXEL_SCALE, PIXEL_SCALE);
 	}
 }
 
 void ColourTablePanel::onMouseDown(wxMouseEvent & event) {
 	wxPoint position(event.GetPosition());
 
-	if(position.x < 0 || position.y < getVerticalOffset() || position.x > PALETTE_RENDER_WIDTH * PIXEL_SCALE || position.y > (PALETTE_RENDER_HEIGHT * PIXEL_SCALE) + getVerticalOffset()) {
+	if(position.x < 0 || position.y < getVerticalOffset() || position.x > COLOUR_TABLE_RENDER_WIDTH * PIXEL_SCALE || position.y > (COLOUR_TABLE_RENDER_HEIGHT * PIXEL_SCALE) + getVerticalOffset()) {
 		return;
 	}
 
-	const uint8_t pixelIndex = static_cast<uint8_t>((position.x / PIXEL_SCALE) + (((position.y - getVerticalOffset()) / PIXEL_SCALE) * PALETTE_RENDER_HEIGHT));
+	const uint8_t pixelIndex = static_cast<uint8_t>((position.x / PIXEL_SCALE) + (((position.y - getVerticalOffset()) / PIXEL_SCALE) * COLOUR_TABLE_RENDER_WIDTH));
 
 	if(pixelIndex >= m_colourTable->numberOfColours()) {
 		return;
