@@ -9,6 +9,7 @@
 #include "Game/File/Palette/JASC/PaletteJASC.h"
 #include "Game/File/Palette/KPL/PaletteKPL.h"
 #include "Game/File/Palette/PAL/PalettePAL.h"
+#include "Game/File/Palette/TXT/PaletteTXT.h"
 #include "GUI/Game/File/Palette/ACT/PalettePanelACT.h"
 #include "GUI/Game/File/Palette/CSS/PalettePanelCSS.h"
 #include "GUI/Game/File/Palette/DAT/PalettePanelDAT.h"
@@ -16,6 +17,7 @@
 #include "GUI/Game/File/Palette/JASC/PalettePanelJASC.h"
 #include "GUI/Game/File/Palette/KPL/PalettePanelKPL.h"
 #include "GUI/Game/File/Palette/PAL/PalettePanelPAL.h"
+#include "GUI/Game/File/Palette/TXT/PalettePanelTXT.h"
 #include "GUI/Game/File/Group/GRP/GroupPanelGRP.h"
 #include "GUI/Game/File/Group/SSI/GroupPanelSSI.h"
 #include "GUI/WXUtilities.h"
@@ -212,6 +214,14 @@ void GameFilePanelFactoryRegistry::assignDefaultFactories() {
 		}
 
 		return new GroupPanelSSI(std::unique_ptr<GroupSSI>(static_cast<GroupSSI *>(gameFile.release())), parent, windowID, position, size, style);
+	});
+
+	setFactory(PaletteTXT::FILE_FORMAT_EXTENSIONS, PaletteTXT::FILE_FORMAT_NAME, std::type_index(typeid(PalettePanelTXT)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
+		if(dynamic_cast<const PaletteTXT *>(gameFile.get()) == nullptr) {
+			return static_cast<PalettePanelTXT *>(nullptr);
+		}
+
+		return new PalettePanelTXT(std::unique_ptr<PaletteTXT>(static_cast<PaletteTXT *>(gameFile.release())), parent, windowID, position, size, style);
 	});
 }
 

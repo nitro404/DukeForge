@@ -135,6 +135,8 @@ set(GUI_SOURCE_FILES
 	GUI/Game/File/Palette/KPL/PalettePanelKPL.cpp
 	GUI/Game/File/Palette/PAL/PalettePanelPAL.h
 	GUI/Game/File/Palette/PAL/PalettePanelPAL.cpp
+	GUI/Game/File/Palette/TXT/PalettePanelTXT.h
+	GUI/Game/File/Palette/TXT/PalettePanelTXT.cpp
 	GUI/Hyperlink.h
 	GUI/Hyperlink.cpp
 	GUI/MetadataPanel.h
