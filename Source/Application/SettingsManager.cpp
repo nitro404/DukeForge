@@ -274,14 +274,14 @@ rapidjson::Document SettingsManager::toJSON() const {
 		downloadThrottlingCategoryValue.AddMember(rapidjson::StringRef(CACERT_LAST_DOWNLOADED_PROPERTY_NAME), cacertLastDownloadedValue, allocator);
 	}
 
-	downloadThrottlingCategoryValue.AddMember(rapidjson::StringRef(CACERT_UPDATE_FREQUENCY_PROPERTY_NAME), rapidjson::Value(cacertUpdateFrequency.count()), allocator);
+	downloadThrottlingCategoryValue.AddMember(rapidjson::StringRef(CACERT_UPDATE_FREQUENCY_PROPERTY_NAME), rapidjson::Value(static_cast<uint64_t>(cacertUpdateFrequency.count())), allocator);
 
 	if(timeZoneDataLastDownloadedTimestamp.has_value()) {
 		rapidjson::Value timeZoneDataLastDownloadedValue(Utilities::timePointToString(timeZoneDataLastDownloadedTimestamp.value(), Utilities::TimeFormat::ISO8601).c_str(), allocator);
 		downloadThrottlingCategoryValue.AddMember(rapidjson::StringRef(TIME_ZONE_DATA_LAST_DOWNLOADED_PROPERTY_NAME), timeZoneDataLastDownloadedValue, allocator);
 	}
 
-	downloadThrottlingCategoryValue.AddMember(rapidjson::StringRef(TIME_ZONE_DATA_UPDATE_FREQUENCY_PROPERTY_NAME), rapidjson::Value(timeZoneDataUpdateFrequency.count()), allocator);
+	downloadThrottlingCategoryValue.AddMember(rapidjson::StringRef(TIME_ZONE_DATA_UPDATE_FREQUENCY_PROPERTY_NAME), rapidjson::Value(static_cast<uint64_t>(timeZoneDataUpdateFrequency.count())), allocator);
 
 	settingsDocument.AddMember(rapidjson::StringRef(DOWNLOAD_THROTTLING_CATEGORY_NAME), downloadThrottlingCategoryValue, allocator);
 

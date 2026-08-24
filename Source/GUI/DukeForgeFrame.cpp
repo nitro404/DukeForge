@@ -50,7 +50,9 @@ DukeForgeFrame::DukeForgeFrame()
 		return std::make_unique<GameFilePanelFactoryRegistry>();
 	});
 
+#if defined(DUKEFORGE_ICON)
 	SetIcon(wxICON(DUKEFORGE_ICON));
+#endif // DUKEFORGE_ICON
 
 #if wxUSE_MENUS
 	wxMenu * gameFileMenu = new wxMenu();

@@ -532,12 +532,12 @@ SettingPanel * SettingPanel::createOptionalStringSettingPanel(std::function<std:
 }
 
 template <typename E>
-SettingPanel * SettingPanel::createEnumSettingPanel(E & setting, E defaultSetting, const std::string & name, wxWindow * parent, wxSizer * parentSizer, const std::vector<E> & disabledEnumValues = {}) {
+SettingPanel * SettingPanel::createEnumSettingPanel(E & setting, E defaultSetting, const std::string & name, wxWindow * parent, wxSizer * parentSizer, const std::vector<E> & disabledEnumValues) {
 	return createEnumSettingPanel<E>([&setting]() -> E & { return setting; }, [&setting](E newSetting) { setting = newSetting; }, defaultSetting, name, parent, parentSizer, disabledEnumValues);
 }
 
 template <typename E>
-SettingPanel * SettingPanel::createEnumSettingPanel(std::function<E()> getSettingValueFunction, std::function<void(E)> setSettingValueFunction, E defaultSetting, const std::string & name, wxWindow * parent, wxSizer * parentSizer, const std::vector<E> & disabledEnumValues = {}) {
+SettingPanel * SettingPanel::createEnumSettingPanel(std::function<E()> getSettingValueFunction, std::function<void(E)> setSettingValueFunction, E defaultSetting, const std::string & name, wxWindow * parent, wxSizer * parentSizer, const std::vector<E> & disabledEnumValues) {
 	if(parent == nullptr) {
 		return nullptr;
 	}

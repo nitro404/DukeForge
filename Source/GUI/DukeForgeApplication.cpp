@@ -137,7 +137,10 @@ void DukeForgeApplication::initialize() {
 		wxPD_AUTO_HIDE | wxPD_CAN_ABORT
 	));
 
+#if defined(DUKEFORGE_ICON)
 	initializingProgressDialog->SetIcon(wxICON(DUKEFORGE_ICON));
+#endif // DUKEFORGE_ICON
+
 	initializingProgressDialog->Fit();
 
 	m_dukeForgeInitializationProgressConnection = m_dukeForge->initializationProgress.connect([this, &initializingProgressDialog](uint8_t initializationStep, uint8_t initializationStepCount, std::string description) {
@@ -190,7 +193,10 @@ void DukeForgeApplication::showWindow() {
 		wxPD_AUTO_HIDE | wxPD_CAN_ABORT
 	));
 
-	windowCreationProgressDialog->SetIcon(wxICON(DUKEFORGE_ICON));
+#if defined(DUKEFORGE_ICON)
+    windowCreationProgressDialog->SetIcon(wxICON(DUKEFORGE_ICON));
+#endif // DUKEFORGE_ICON
+
 	windowCreationProgressDialog->Fit();
 	windowCreationProgressDialog->Update(m_dukeForge->numberOfInitializationSteps(), windowCreationProgressDialog->GetMessage());
 
