@@ -61,9 +61,9 @@ hunter_config(gcem
 )
 
 hunter_config(JDKSMIDI
-	URL "https://github.com/Telefrag-Software/jdksmidi/archive/refs/heads/hunter-2014.08.11a.zip"
-	VERSION "2014.08.11a"
-	SHA1 "2f47cc9b8eb1ef540aa5631501d88231c7b3b8ab"
+	URL "https://github.com/Telefrag-Software/jdksmidi/archive/refs/heads/hunter-2014.08.11b.zip"
+	VERSION "2014.08.11b"
+	SHA1 "81a6833ad4d3229c5411a688a835f6fb1e367e8a"
 )
 
 # LibJPEG is used by LibTIFF and wxWidgets.
