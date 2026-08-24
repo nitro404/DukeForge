@@ -171,7 +171,7 @@ void GameFileFactoryRegistry::assignDefaultFactories() {
 	});
 
 	setFactory(PaletteDAT::FILE_FORMAT_EXTENSIONS, PaletteDAT::FILE_FORMAT_NAME, std::type_index(typeid(PaletteDAT)), []() {
-		return std::make_unique<PaletteDAT>(PaletteDAT::Type::Palette);
+		return std::make_unique<PaletteDAT>(*PaletteDAT::DEFAULT_PALETTE_DAT);
 	}, [](const ByteBuffer & data) {
 		return PaletteDAT::readFrom(data);
 	}, [](const std::string & filePath) {

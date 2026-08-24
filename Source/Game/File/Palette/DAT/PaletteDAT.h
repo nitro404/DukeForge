@@ -236,6 +236,9 @@ public:
 	static constexpr uint8_t BYTES_PER_COLOUR = 3;
 	static constexpr uint8_t COLOUR_SCALE = 4;
 
+	static const std::unique_ptr<const PaletteDAT> DEFAULT_PALETTE_DAT;
+	static const std::unique_ptr<const PaletteDAT> DEFAULT_LOOKUP_DAT;
+
 protected:
 	// Palette Virtruals
 	void setModified(bool modified) const override;
