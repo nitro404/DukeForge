@@ -1,6 +1,6 @@
 #include "Tile.h"
 
-const std::map<uint32_t, std::string, Tile::TileNumberComparator> Tile::NAMES = {
+const std::map<uint32_t, std::string, Tile::TileNumberComparator> Tile::DEFAULT_NAMES = {
 	{ 1, "SECTOREFFECTOR" },
 	{ 2, "ACTIVATOR" },
 	{ 3, "TOUCHPLATE" },

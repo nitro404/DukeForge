@@ -22,7 +22,7 @@ static const std::string JSON_DATA_PROPERTY_NAME("data");
 
 static constexpr bool BASE_64_ENCODE_DATA = false;
 
-const std::map<uint32_t, uint8_t> Tile::SPECIAL_TILE_PALETTE_LOOKUP_TABLE_NUMBERS = {
+const std::map<uint32_t, uint8_t> Tile::SPECIAL_TILE_PALETTE_LOOKUP_COLOUR_TABLE_INDEXES = {
 	{ 2492, 3 }, // 3D Realms Logo
 	{ 2493, 2 }, // Title Screen Background
 	{ 2497, 2 }, // Duke Nukem
@@ -215,18 +215,18 @@ void Tile::setNumber(uint32_t number) {
 	m_number = number;
 }
 
-bool Tile::hasName() const {
-	return NAMES.find(m_number) != NAMES.cend();
+bool Tile::hasDefaultName() const {
+	return DEFAULT_NAMES.find(m_number) != DEFAULT_NAMES.cend();
 }
 
-const std::string & Tile::getName() const {
-	auto nameIterator = NAMES.find(m_number);
+const std::string & Tile::getDefaultName() const {
+	auto defaultNameIterator = DEFAULT_NAMES.find(m_number);
 
-	if(nameIterator == NAMES.cend()) {
+	if(defaultNameIterator == DEFAULT_NAMES.cend()) {
 		return Utilities::emptyString;
 	}
 
-	return nameIterator->second;
+	return defaultNameIterator->second;
 }
 
 bool Tile::isEmpty() const {

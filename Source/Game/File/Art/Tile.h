@@ -79,8 +79,8 @@ public:
 	bool setAttributes(int8_t xOffset, int8_t yOffset, uint8_t numberOfAnimatedFrames, AnimationType animationType, uint8_t animationSpeed, uint8_t extra);
 	uint32_t getNumber() const;
 	void setNumber(uint32_t number);
-	bool hasName() const;
-	const std::string & getName() const;
+	bool hasDefaultName() const;
+	const std::string & getDefaultName() const;
 	bool isEmpty() const;
 	bool isNotEmpty() const;
 	uint16_t getWidth() const;
@@ -103,8 +103,8 @@ public:
 	bool operator == (const Tile & tile) const;
 	bool operator != (const Tile & tile) const;
 
-	static const std::map<uint32_t, std::string, TileNumberComparator> NAMES;
-	static const std::map<uint32_t, uint8_t> SPECIAL_TILE_PALETTE_LOOKUP_TABLE_NUMBERS;
+	static const std::map<uint32_t, std::string, TileNumberComparator> DEFAULT_NAMES;
+	static const std::map<uint32_t, uint8_t> SPECIAL_TILE_PALETTE_LOOKUP_COLOUR_TABLE_INDEXES;
 
 private:
 	uint32_t m_number;
