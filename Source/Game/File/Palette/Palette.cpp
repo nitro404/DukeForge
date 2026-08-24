@@ -39,12 +39,20 @@ Palette::Palette(std::vector<std::unique_ptr<ColourTable>> && colourTables, cons
 
 Palette::Palette(Palette && palette) noexcept
 	: GameFile(std::move(palette)) {
+	for(std::shared_ptr<ColourTable> & colourTable : palette.m_colourTables) {
+		m_colourTables.push_back(colourTable);
+	}
+
 	updateParent();
 	connectSignals();
 }
 
 Palette::Palette(const Palette & palette)
 	: GameFile(palette) {
+	for(const std::shared_ptr<const ColourTable> & colourTable : palette.m_colourTables) {
+		m_colourTables.push_back(std::make_shared<ColourTable>(*colourTable));
+	}
+
 	updateParent();
 	connectSignals();
 }
@@ -58,6 +66,10 @@ Palette & Palette::operator = (Palette && palette) noexcept {
 		}
 
 		m_colourTableConnections.clear();
+
+		for(std::shared_ptr<ColourTable> & colourTable : palette.m_colourTables) {
+			m_colourTables.push_back(colourTable);
+		}
 
 		updateParent();
 		connectSignals();
@@ -74,6 +86,10 @@ Palette & Palette::operator = (const Palette & palette) {
 	}
 
 	m_colourTableConnections.clear();
+
+	for(const std::shared_ptr<const ColourTable> & colourTable : palette.m_colourTables) {
+		m_colourTables.push_back(std::make_shared<ColourTable>(*colourTable));
+	}
 
 	updateParent();
 	connectSignals();
