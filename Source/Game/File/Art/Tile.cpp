@@ -255,6 +255,71 @@ void Tile::setHeight(uint16_t height) {
 	m_height = height;
 }
 
+Dimension Tile::getDimensions() const {
+	return Dimension(m_width, m_height);
+}
+
+bool Tile::setDimensions(Dimension dimension) {
+	if(dimension.w > std::numeric_limits<uint16_t>::max() || dimension.h > std::numeric_limits<uint16_t>::max()) {
+		return false;
+	}
+
+	m_width = dimension.w;
+	m_height = dimension.h;
+
+	return true;
+}
+
+uint32_t Tile::numberOfPixels() const {
+	return m_width * m_height;
+}
+
+uint8_t Tile::getPixel(uint32_t pixelIndex, bool * error) const {
+	if(isEmpty() || pixelIndex >= m_data->getSize()) {
+		if(error) {
+			*error = true;
+		}
+
+		return 0u;
+	}
+
+	if(error) {
+		*error = false;
+	}
+
+	return (*m_data)[pixelIndex];
+}
+
+std::optional<uint8_t> Tile::getPixel(uint32_t pixelIndex) const {
+	bool error = false;
+
+	const uint8_t pixel = getPixel(pixelIndex, &error);
+
+	if(error) {
+		return {};
+	}
+
+	return pixel;
+}
+
+const std::vector<uint8_t> & Tile::getPixels() const {
+	return m_data->getData();
+}
+
+std::optional<uint8_t> Tile::getLookupColourTableIndex() const {
+	return getLookupColourTableIndex(m_number);
+}
+
+std::optional<uint8_t> Tile::getLookupColourTableIndex(uint32_t tileNumber) {
+	std::map<uint32_t, uint8_t>::const_iterator lookupColourTableIndexIterator(SPECIAL_TILE_PALETTE_LOOKUP_COLOUR_TABLE_INDEXES.find(tileNumber));
+
+	if(lookupColourTableIndexIterator == SPECIAL_TILE_PALETTE_LOOKUP_COLOUR_TABLE_INDEXES.cend()) {
+		return {};
+	}
+
+	return lookupColourTableIndexIterator->second;
+}
+
 size_t Tile::getSize() const {
 	if(m_data == nullptr) {
 		return 0;

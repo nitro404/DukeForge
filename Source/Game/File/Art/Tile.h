@@ -2,6 +2,7 @@
 #define _TILE_H_
 
 #include <ByteBuffer.h>
+#include <Dimension.h>
 
 #include <rapidjson/document.h>
 
@@ -87,6 +88,14 @@ public:
 	void setWidth(uint16_t width);
 	uint16_t getHeight() const;
 	void setHeight(uint16_t height);
+	Dimension getDimensions() const;
+	bool setDimensions(Dimension dimension);
+	uint32_t numberOfPixels() const;
+	uint8_t getPixel(uint32_t pixelIndex, bool * error) const;
+	std::optional<uint8_t> getPixel(uint32_t pixelIndex) const;
+	const std::vector<uint8_t> & getPixels() const;
+	std::optional<uint8_t> getLookupColourTableIndex() const;
+	static std::optional<uint8_t> getLookupColourTableIndex(uint32_t tileNumber);
 	size_t getSize() const;
 	std::shared_ptr<ByteBuffer> getData() const;
 	void setData(std::unique_ptr<ByteBuffer> data);
