@@ -1,5 +1,7 @@
 #include "GameFilePanelFactoryRegistry.h"
 
+#include "Game/File/Art/Art.h"
+#include "Game/File/Art/Tile.h"
 #include "Game/File/Group/GRP/GroupGRP.h"
 #include "Game/File/Group/SSI/GroupSSI.h"
 #include "Game/File/Palette/ACT/PaletteACT.h"
@@ -10,6 +12,8 @@
 #include "Game/File/Palette/KPL/PaletteKPL.h"
 #include "Game/File/Palette/PAL/PalettePAL.h"
 #include "Game/File/Palette/TXT/PaletteTXT.h"
+#include "GUI/Game/File/Art/ArtPanel.h"
+#include "GUI/Game/File/Art/TilePanel.h"
 #include "GUI/Game/File/Palette/ACT/PalettePanelACT.h"
 #include "GUI/Game/File/Palette/CSS/PalettePanelCSS.h"
 #include "GUI/Game/File/Palette/DAT/PalettePanelDAT.h"
@@ -150,6 +154,14 @@ void GameFilePanelFactoryRegistry::assignDefaultFactories() {
 		}
 
 		return new PalettePanelACT(std::unique_ptr<PaletteACT>(static_cast<PaletteACT *>(gameFile.release())), parent, windowID, position, size, style);
+	});
+
+	setFactory(Art::FILE_FORMAT_EXTENSIONS, Art::FILE_FORMAT_NAME, std::type_index(typeid(Art)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
+		if(dynamic_cast<const Art *>(gameFile.get()) == nullptr) {
+			return static_cast<ArtPanel *>(nullptr);
+		}
+
+		return new ArtPanel(std::unique_ptr<Art>(static_cast<Art *>(gameFile.release())), parent, windowID, position, size, style);
 	});
 
 	setFactory(PaletteCSS::FILE_FORMAT_EXTENSIONS, PaletteCSS::FILE_FORMAT_NAME, std::type_index(typeid(PalettePanelCSS)), [](std::unique_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style) {
