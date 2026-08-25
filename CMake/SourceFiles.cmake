@@ -111,6 +111,10 @@ set(GUI_SOURCE_FILES
 	GUI/Game/File/GameFilePanel.cpp
 	GUI/Game/File/GameFilePanelFactoryRegistry.h
 	GUI/Game/File/GameFilePanelFactoryRegistry.cpp
+	GUI/Game/File/Art/ArtPanel.h
+	GUI/Game/File/Art/ArtPanel.cpp
+	GUI/Game/File/Art/TilePanel.h
+	GUI/Game/File/Art/TilePanel.cpp
 	GUI/Game/File/Group/GroupPanel.h
 	GUI/Game/File/Group/GroupPanel.cpp
 	GUI/Game/File/Group/GRP/GroupPanelGRP.h
