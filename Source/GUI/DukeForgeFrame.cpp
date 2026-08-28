@@ -44,15 +44,34 @@ DukeForgeFrame::DukeForgeFrame()
 #endif // wxUSE_MENUS
 	, m_notebook(nullptr)
 	, m_settingsManagerPanel(nullptr) {
+#if defined(DUKEFORGE_ICON)
+	SetIcon(wxICON(DUKEFORGE_ICON));
+#endif // DUKEFORGE_ICON
+}
+
+DukeForgeFrame::~DukeForgeFrame() {
+	m_activeProjectPanelChangedConnection.disconnect();
+	m_settingsManagerPanelSignalConnectionGroup.disconnect();
+}
+
+bool DukeForgeFrame::isInitialized() const {
+	return m_initialized;
+}
+
+bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
+	if(m_initialized) {
+		return true;
+	}
+
+	if(dukeForge == nullptr) {
+		return false;
+	}
+
 	FactoryRegistry & factoryRegistry = FactoryRegistry::getInstance();
 
 	factoryRegistry.setFactory<GameFilePanelFactoryRegistry>([]() {
 		return std::make_unique<GameFilePanelFactoryRegistry>();
 	});
-
-#if defined(DUKEFORGE_ICON)
-	SetIcon(wxICON(DUKEFORGE_ICON));
-#endif // DUKEFORGE_ICON
 
 #if wxUSE_MENUS
 	wxMenu * gameFileMenu = new wxMenu();
@@ -112,25 +131,6 @@ DukeForgeFrame::DukeForgeFrame()
 
 	SetMenuBar(menuBar);
 #endif // wxUSE_MENUS
-}
-
-DukeForgeFrame::~DukeForgeFrame() {
-	m_activeProjectPanelChangedConnection.disconnect();
-	m_settingsManagerPanelSignalConnectionGroup.disconnect();
-}
-
-bool DukeForgeFrame::isInitialized() const {
-	return m_initialized;
-}
-
-bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
-	if(m_initialized) {
-		return true;
-	}
-
-	if(dukeForge == nullptr) {
-		return false;
-	}
 
 	SetPosition(WXUtilities::createWXPoint(SettingsManager::getInstance()->windowPosition));
 	SetSize(WXUtilities::createWXSize(SettingsManager::getInstance()->windowSize));
