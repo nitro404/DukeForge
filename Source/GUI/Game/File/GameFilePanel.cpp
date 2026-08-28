@@ -11,6 +11,8 @@
 GameFilePanel::GameFilePanel(std::shared_ptr<GameFile> gameFile, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style, const std::string & name)
 	: wxPanel(parent, windowID, position, size, style, name)
 	, m_gameFile(gameFile) {
+	wxASSERT(wxIsMainThread());
+
 	m_gameFileModifiedConnection = m_gameFile->modified.connect(std::bind(&GameFilePanel::onGameFileModified, this, std::placeholders::_1));
 }
 

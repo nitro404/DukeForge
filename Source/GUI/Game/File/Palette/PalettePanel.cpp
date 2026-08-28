@@ -23,6 +23,8 @@ PalettePanel::PalettePanel(std::unique_ptr<Palette> palette, wxWindow * parent, 
 	, m_fileInfoBoxSizer(nullptr)
 	, m_colourTablesScrolledWindow(nullptr)
 	, m_colourTablesScrolledWindowSizer(nullptr) {
+	wxASSERT(wxIsMainThread());
+
 	m_palettePropertiesPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxPanel * numberOfColourTablesPropertyPanel = new wxPanel(m_palettePropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -98,6 +100,8 @@ std::shared_ptr<Palette> PalettePanel::getPalette() {
 }
 
 void PalettePanel::update() {
+	wxASSERT(wxIsMainThread());
+
 	std::shared_ptr<const Palette> palette(getPalette());
 
 	if(palette == nullptr) {

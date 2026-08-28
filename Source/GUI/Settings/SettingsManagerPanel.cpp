@@ -19,6 +19,8 @@ SettingsManagerPanel::SettingsManagerPanel(std::shared_ptr<DukeForge> dukeForge,
 	, m_modified(false)
 	, m_discardChangesButton(nullptr)
 	, m_saveSettingsButton(nullptr) {
+	wxASSERT(wxIsMainThread());
+
 	SettingsManager * settings = SettingsManager::getInstance();
 
 	int wrapSizerOrientation = wxHORIZONTAL;
@@ -153,6 +155,8 @@ void SettingsManagerPanel::discard() {
 }
 
 bool SettingsManagerPanel::save() {
+	wxASSERT(wxIsMainThread());
+
 	size_t numberOfInvalidSettings = 0;
 	std::stringstream invalidSettingPanelNames;
 
@@ -209,6 +213,8 @@ bool SettingsManagerPanel::save() {
 }
 
 void SettingsManagerPanel::updateButtons() {
+	wxASSERT(wxIsMainThread());
+
 	WXUtilities::setButtonEnabled(m_discardChangesButton, m_modified);
 	WXUtilities::setButtonEnabled(m_saveSettingsButton, m_modified);
 }

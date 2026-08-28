@@ -44,6 +44,8 @@ DukeForgeFrame::DukeForgeFrame()
 #endif // wxUSE_MENUS
 	, m_notebook(nullptr)
 	, m_settingsManagerPanel(nullptr) {
+	wxASSERT(wxIsMainThread());
+
 #if defined(DUKEFORGE_ICON)
 	SetIcon(wxICON(DUKEFORGE_ICON));
 #endif // DUKEFORGE_ICON
@@ -59,6 +61,8 @@ bool DukeForgeFrame::isInitialized() const {
 }
 
 bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
+	wxASSERT(wxIsMainThread());
+
 	if(m_initialized) {
 		return true;
 	}
@@ -195,6 +199,8 @@ bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
 }
 
 bool DukeForgeFrame::hasProjectPanel(const ProjectPanel * projectPanel) const {
+	wxASSERT(wxIsMainThread());
+
 	if(projectPanel == nullptr) {
 		return false;
 	}
@@ -209,6 +215,8 @@ bool DukeForgeFrame::hasProjectPanel(const ProjectPanel * projectPanel) const {
 }
 
 size_t DukeForgeFrame::indexOfProjectPanel(const ProjectPanel * projectPanel) const {
+	wxASSERT(wxIsMainThread());
+
 	if(projectPanel == nullptr) {
 		return false;
 	}
@@ -223,6 +231,8 @@ size_t DukeForgeFrame::indexOfProjectPanel(const ProjectPanel * projectPanel) co
 }
 
 size_t DukeForgeFrame::numberOfProjectPanels() const {
+	wxASSERT(wxIsMainThread());
+
 	size_t projectPanelCount = 0u;
 
 	for(size_t i = 0; i < m_notebook->GetPageCount(); i++) {
@@ -235,6 +245,8 @@ size_t DukeForgeFrame::numberOfProjectPanels() const {
 }
 
 ProjectPanel * DukeForgeFrame::getProjectPanel(size_t projectPanelIndex) const {
+	wxASSERT(wxIsMainThread());
+
 	if(projectPanelIndex >= m_notebook->GetPageCount()) {
 		return nullptr;
 	}
@@ -243,10 +255,14 @@ ProjectPanel * DukeForgeFrame::getProjectPanel(size_t projectPanelIndex) const {
 }
 
 ProjectPanel * DukeForgeFrame::getCurrentProjectPanel() const {
+	wxASSERT(wxIsMainThread());
+
 	return dynamic_cast<ProjectPanel *>(m_notebook->GetCurrentPage());
 }
 
 bool DukeForgeFrame::hasUnsavedProjects() const {
+	wxASSERT(wxIsMainThread());
+
 	for(size_t i = 0; i < numberOfProjectPanels(); i++) {
 		ProjectPanel * projectPanel = getProjectPanel(i);
 
@@ -259,6 +275,8 @@ bool DukeForgeFrame::hasUnsavedProjects() const {
 }
 
 bool DukeForgeFrame::updateProjectPanel(size_t projectPanelIndex) {
+	wxASSERT(wxIsMainThread());
+
 	ProjectPanel * projectPanel = getProjectPanel(projectPanelIndex);
 
 	if(projectPanel == nullptr) {
@@ -271,12 +289,16 @@ bool DukeForgeFrame::updateProjectPanel(size_t projectPanelIndex) {
 }
 
 void DukeForgeFrame::updateProjectPanelNames() {
+	wxASSERT(wxIsMainThread());
+
 	for(size_t i = 0; i < m_notebook->GetPageCount(); i++) {
 		updateProjectPanelName(i);
 	}
 }
 
 bool DukeForgeFrame::updateProjectPanelName(size_t projectPanelIndex) {
+	wxASSERT(wxIsMainThread());
+
 	ProjectPanel * projectPanel = getProjectPanel(projectPanelIndex);
 
 	if(projectPanel == nullptr) {
@@ -290,6 +312,8 @@ bool DukeForgeFrame::updateProjectPanelName(size_t projectPanelIndex) {
 }
 
 void DukeForgeFrame::addProjectPanel(ProjectPanel * projectPanel) {
+	wxASSERT(wxIsMainThread());
+
 	if(projectPanel == nullptr) {
 		return;
 	}
@@ -315,6 +339,8 @@ void DukeForgeFrame::addProjectPanel(ProjectPanel * projectPanel) {
 }
 
 bool DukeForgeFrame::closeProjectPanel(size_t projectPanelIndex) {
+	wxASSERT(wxIsMainThread());
+
 	ProjectPanel * projectPanel = getProjectPanel(projectPanelIndex);
 
 	if(projectPanel == nullptr) {
@@ -351,6 +377,8 @@ bool DukeForgeFrame::closeProjectPanel(size_t projectPanelIndex) {
 }
 
 bool DukeForgeFrame::closeCurrentProjectPanel() {
+	wxASSERT(wxIsMainThread());
+
 	int currentProjectPanelIndex = m_notebook->GetSelection();
 
 	if(currentProjectPanelIndex == wxNOT_FOUND) {
@@ -365,6 +393,8 @@ bool DukeForgeFrame::closeCurrentProjectPanel() {
 }
 
 bool DukeForgeFrame::closeAllProjectPanels() {
+	wxASSERT(wxIsMainThread());
+
 	while(m_notebook->GetPageCount() != 0) {
 		if(!closeCurrentProjectPanel()) {
 			return false;
@@ -375,12 +405,16 @@ bool DukeForgeFrame::closeAllProjectPanels() {
 }
 
 void DukeForgeFrame::requestReload() {
+	wxASSERT(wxIsMainThread());
+
 	reloadRequested();
 
 	Close();
 }
 
 void DukeForgeFrame::updateMenu() {
+	wxASSERT(wxIsMainThread());
+
 	const ProjectPanel * projectPanel = getCurrentProjectPanel();
 	const GameFilePanel * gameFilePanel = projectPanel != nullptr ? projectPanel->getCurrentGameFilePanel() : nullptr;
 	const GroupPanel * groupPanel = dynamic_cast<const GroupPanel *>(gameFilePanel);
@@ -404,6 +438,8 @@ void DukeForgeFrame::updateMenu() {
 
 #if wxUSE_MENUS
 void DukeForgeFrame::onGameFileMenuItemPressed(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	ProjectPanel * currentProjectPanel = getCurrentProjectPanel();
 
 	if(currentProjectPanel == nullptr) {
@@ -437,6 +473,8 @@ void DukeForgeFrame::onGameFileMenuItemPressed(wxCommandEvent & event) {
 }
 
 void DukeForgeFrame::onGroupMenuItemPressed(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	ProjectPanel * currentProjectPanel = getCurrentProjectPanel();
 
 	if(currentProjectPanel == nullptr) {
@@ -467,6 +505,8 @@ void DukeForgeFrame::onGroupMenuItemPressed(wxCommandEvent & event) {
 }
 
 void DukeForgeFrame::onViewMenuItemPressed(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	SettingsManager * settings = SettingsManager::getInstance();
 
 	if(event.GetId() == m_resetWindowPositionMenuItem->GetId()) {
@@ -481,6 +521,8 @@ void DukeForgeFrame::onViewMenuItemPressed(wxCommandEvent & event) {
 }
 
 void DukeForgeFrame::onHelpMenuItemPressed(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	if(event.GetId() == m_aboutMenuItem->GetId()) {
 		wxMessageBox(
 			fmt::format(
@@ -503,6 +545,8 @@ void DukeForgeFrame::onHelpMenuItemPressed(wxCommandEvent & event) {
 #endif // wxUSE_MENUS
 
 void DukeForgeFrame::onNotebookPageChanging(wxBookCtrlEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	wxWindow * currentPage = m_notebook->GetPage(m_notebook->GetSelection());
 
 	if(dynamic_cast<SettingsManagerPanel *>(currentPage) != nullptr) {
@@ -528,6 +572,8 @@ void DukeForgeFrame::onNotebookPageChanging(wxBookCtrlEvent & event) {
 }
 
 void DukeForgeFrame::onNotebookPageChanged(wxBookCtrlEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	wxWindow * currentPage = m_notebook->GetPage(m_notebook->GetSelection());
 
 	if(dynamic_cast<SettingsManagerPanel *>(currentPage) != nullptr) {

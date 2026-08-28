@@ -28,6 +28,8 @@
 ProjectPanel::ProjectPanel(wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style)
 	: wxPanel(parent, windowID, position, size, style, "Project")
 	, m_notebook(nullptr) {
+	wxASSERT(wxIsMainThread());
+
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 
 	m_notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP | wxNB_MULTILINE, "Game Files");
@@ -51,6 +53,8 @@ std::string ProjectPanel::getPanelName() const {
 }
 
 bool ProjectPanel::hasGameFilePanel(const GameFilePanel * gameFilePanel) const {
+	wxASSERT(wxIsMainThread());
+
 	if(gameFilePanel == nullptr) {
 		return false;
 	}
@@ -65,6 +69,8 @@ bool ProjectPanel::hasGameFilePanel(const GameFilePanel * gameFilePanel) const {
 }
 
 bool ProjectPanel::hasPanelWithGameFile(const GameFile * gameFile) const {
+	wxASSERT(wxIsMainThread());
+
 	if(gameFile == nullptr) {
 		return false;
 	}
@@ -79,6 +85,8 @@ bool ProjectPanel::hasPanelWithGameFile(const GameFile * gameFile) const {
 }
 
 bool ProjectPanel::hasPanelWithGameFilePath(const std::string & filePath) const {
+	wxASSERT(wxIsMainThread());
+
 	if(filePath.empty()) {
 		return false;
 	}
@@ -93,6 +101,8 @@ bool ProjectPanel::hasPanelWithGameFilePath(const std::string & filePath) const 
 }
 
 size_t ProjectPanel::indexOfGameFilePanel(const GameFilePanel * gameFilePanel) const {
+	wxASSERT(wxIsMainThread());
+
 	if(gameFilePanel == nullptr) {
 		return std::numeric_limits<size_t>::max();
 	}
@@ -107,6 +117,8 @@ size_t ProjectPanel::indexOfGameFilePanel(const GameFilePanel * gameFilePanel) c
 }
 
 size_t ProjectPanel::indexOfPanelWithGameFile(const GameFile * gameFile) const {
+	wxASSERT(wxIsMainThread());
+
 	if(gameFile == nullptr) {
 		return std::numeric_limits<size_t>::max();
 	}
@@ -121,6 +133,8 @@ size_t ProjectPanel::indexOfPanelWithGameFile(const GameFile * gameFile) const {
 }
 
 size_t ProjectPanel::indexOfPanelWithGameFileFilePath(const std::string & filePath) const {
+	wxASSERT(wxIsMainThread());
+
 	std::error_code errorCode;
 	std::filesystem::path actualFilePath(filePath);
 
@@ -134,10 +148,14 @@ size_t ProjectPanel::indexOfPanelWithGameFileFilePath(const std::string & filePa
 }
 
 size_t ProjectPanel::numberOfGameFilePanels() const {
+	wxASSERT(wxIsMainThread());
+
 	return m_notebook->GetPageCount();
 }
 
 GameFilePanel * ProjectPanel::getGameFilePanel(size_t gameFilePanelIndex) const {
+	wxASSERT(wxIsMainThread());
+
 	if(gameFilePanelIndex >= m_notebook->GetPageCount()) {
 		return nullptr;
 	}
@@ -154,6 +172,8 @@ GameFilePanel * ProjectPanel::getPanelWithGameFileFilePath(const std::string & f
 }
 
 GameFilePanel * ProjectPanel::getCurrentGameFilePanel() const {
+	wxASSERT(wxIsMainThread());
+
 	return dynamic_cast<GameFilePanel *>(m_notebook->GetCurrentPage());
 }
 
@@ -202,12 +222,16 @@ bool ProjectPanel::updateGameFilePanel(size_t gameFilePanelIndex) {
 }
 
 void ProjectPanel::updateGameFilePanelNames() {
+	wxASSERT(wxIsMainThread());
+
 	for(size_t i = 0; i < m_notebook->GetPageCount(); i++) {
 		updateGameFilePanelName(i);
 	}
 }
 
 bool ProjectPanel::updateGameFilePanelName(size_t gameFilePanelIndex) {
+	wxASSERT(wxIsMainThread());
+
 	GameFilePanel * gameFilePanel = getGameFilePanel(gameFilePanelIndex);
 
 	if(gameFilePanel == nullptr) {
@@ -221,6 +245,8 @@ bool ProjectPanel::updateGameFilePanelName(size_t gameFilePanelIndex) {
 }
 
 void ProjectPanel::addGameFilePanel(GameFilePanel * gameFilePanel) {
+	wxASSERT(wxIsMainThread());
+
 	if(gameFilePanel == nullptr) {
 		return;
 	}
@@ -244,6 +270,8 @@ void ProjectPanel::addGameFilePanel(GameFilePanel * gameFilePanel) {
 }
 
 bool ProjectPanel::newGameFile() {
+	wxASSERT(wxIsMainThread());
+
 	GameFileFactoryRegistry * gameFileFactoryRegistry = GameFileFactoryRegistry::getInstance();
 	GameFilePanelFactoryRegistry * gameFilePanelFactoryRegistry = GameFilePanelFactoryRegistry::getInstance();
 
@@ -296,6 +324,8 @@ bool ProjectPanel::newGameFile() {
 }
 
 bool ProjectPanel::openGameFile(const std::string & filePath) {
+	wxASSERT(wxIsMainThread());
+
 	GameFileFactoryRegistry * gameFileFactoryRegistry = GameFileFactoryRegistry::getInstance();
 	GameFilePanelFactoryRegistry * gameFilePanelFactoryRegistry = GameFilePanelFactoryRegistry::getInstance();
 
@@ -348,6 +378,8 @@ bool ProjectPanel::openGameFile(const std::string & filePath) {
 }
 
 size_t ProjectPanel::openGameFiles() {
+	wxASSERT(wxIsMainThread());
+
 	GameFilePanelFactoryRegistry * gameFilePanelFactoryRegistry = GameFilePanelFactoryRegistry::getInstance();
 
 	if(gameFilePanelFactoryRegistry == nullptr) {
@@ -376,6 +408,8 @@ size_t ProjectPanel::openGameFiles() {
 }
 
 bool ProjectPanel::createGroupFromDirectory(const std::string & directoryPath) {
+	wxASSERT(wxIsMainThread());
+
 	GameFileFactoryRegistry * gameFileFactoryRegistry = GameFileFactoryRegistry::getInstance();
 	GameFilePanelFactoryRegistry * gameFilePanelFactoryRegistry = GameFilePanelFactoryRegistry::getInstance();
 
@@ -431,6 +465,8 @@ bool ProjectPanel::createGroupFromDirectory(const std::string & directoryPath) {
 }
 
 bool ProjectPanel::createGroupFromDirectory() {
+	wxASSERT(wxIsMainThread());
+
 	wxDirDialog selectDirectoryDialog(this, "Create Group from Directory", std::filesystem::current_path().string(), wxDD_DIR_MUST_EXIST, wxDefaultPosition, wxDefaultSize, "Create Group");
 	int selectDirectoryResult = selectDirectoryDialog.ShowModal();
 
@@ -442,6 +478,8 @@ bool ProjectPanel::createGroupFromDirectory() {
 }
 
 bool ProjectPanel::saveGameFile(GameFile * gameFile) {
+	wxASSERT(wxIsMainThread());
+
 	GameFilePanelFactoryRegistry * gameFilePanelFactoryRegistry = GameFilePanelFactoryRegistry::getInstance();
 
 	if(gameFilePanelFactoryRegistry == nullptr) {
@@ -489,10 +527,14 @@ bool ProjectPanel::saveGameFile(GameFile * gameFile) {
 }
 
 bool ProjectPanel::saveCurrentGameFile() {
+	wxASSERT(wxIsMainThread());
+
 	return saveGameFile(getCurrentGameFile().get());
 }
 
 bool ProjectPanel::saveGameFileAs(GameFile * gameFile) {
+	wxASSERT(wxIsMainThread());
+
 	GameFilePanelFactoryRegistry * gameFilePanelFactoryRegistry = GameFilePanelFactoryRegistry::getInstance();
 
 	if(gameFilePanelFactoryRegistry == nullptr) {
@@ -551,10 +593,14 @@ bool ProjectPanel::saveGameFileAs(GameFile * gameFile) {
 }
 
 bool ProjectPanel::saveCurrentGameFileAs() {
+	wxASSERT(wxIsMainThread());
+
 	return saveGameFileAs(getCurrentGameFile().get());
 }
 
 bool ProjectPanel::saveAllGameFiles() {
+	wxASSERT(wxIsMainThread());
+
 	bool allGameFilesSaved = true;
 	GameFilePanel * gameFilePanel = nullptr;
 
@@ -574,6 +620,8 @@ bool ProjectPanel::saveAllGameFiles() {
 }
 
 size_t ProjectPanel::addFilesToGroup(Group * group) {
+	wxASSERT(wxIsMainThread());
+
 	if(!Group::isValid(group)) {
 		WXUtilities::showErrorMessage("Invalid group file.", "Invalid Group File", this);
 		return 0;
@@ -655,6 +703,8 @@ size_t ProjectPanel::addFilesToGroup(Group * group) {
 }
 
 size_t ProjectPanel::addFilesToCurrentGroup() {
+	wxASSERT(wxIsMainThread());
+
 	std::shared_ptr<Group> group(std::dynamic_pointer_cast<Group>(getCurrentGameFile()));
 
 	if(group == nullptr) {
@@ -665,6 +715,8 @@ size_t ProjectPanel::addFilesToCurrentGroup() {
 }
 
 size_t ProjectPanel::removeSelectedFilesFromGroup(Group * group) {
+	wxASSERT(wxIsMainThread());
+
 	if(!Group::isValid(group)) {
 		return 0;
 	}
@@ -682,6 +734,8 @@ size_t ProjectPanel::removeSelectedFilesFromGroup(Group * group) {
 }
 
 size_t ProjectPanel::removeSelectedFilesFromCurrentGroup() {
+	wxASSERT(wxIsMainThread());
+
 	std::shared_ptr<Group> group(std::dynamic_pointer_cast<Group>(getCurrentGameFile()));
 
 	if(group == nullptr) {
@@ -692,6 +746,8 @@ size_t ProjectPanel::removeSelectedFilesFromCurrentGroup() {
 }
 
 bool ProjectPanel::replaceSelectedFileInGroup(Group * group) {
+	wxASSERT(wxIsMainThread());
+
 	if(!Group::isValid(group)) {
 		WXUtilities::showErrorMessage("Invalid group file.", "Invalid Group File", this);
 		return false;
@@ -768,6 +824,8 @@ bool ProjectPanel::replaceSelectedFileInGroup(Group * group) {
 }
 
 bool ProjectPanel::replaceSelectedFileInCurrentGroup() {
+	wxASSERT(wxIsMainThread());
+
 	std::shared_ptr<Group> group(std::dynamic_pointer_cast<Group>(getCurrentGameFile()));
 
 	if(group == nullptr) {
@@ -779,6 +837,8 @@ bool ProjectPanel::replaceSelectedFileInCurrentGroup() {
 }
 
 bool ProjectPanel::renameSelectedFileInGroup(Group * group) {
+	wxASSERT(wxIsMainThread());
+
 	if(!Group::isValid(group)) {
 		WXUtilities::showErrorMessage("Invalid group file.", "Invalid Group File", this);
 		return false;
@@ -831,6 +891,8 @@ bool ProjectPanel::renameSelectedFileInGroup(Group * group) {
 }
 
 bool ProjectPanel::renameSelectedFileInCurrentGroup() {
+	wxASSERT(wxIsMainThread());
+
 	std::shared_ptr<Group> group(std::dynamic_pointer_cast<Group>(getCurrentGameFile()));
 
 	if(group == nullptr) {
@@ -842,6 +904,8 @@ bool ProjectPanel::renameSelectedFileInCurrentGroup() {
 }
 
 std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractFilesFromGroup(const Group * group, const std::vector<std::shared_ptr<GroupFile>> & files) {
+	wxASSERT(wxIsMainThread());
+
 	if(!Group::isValid(group)) {
 		WXUtilities::showErrorMessage("Invalid group file.", "Invalid Group File", this);
 		return {};
@@ -931,6 +995,8 @@ std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractFilesFromGroup(cons
 }
 
 std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractSelectedFilesFromGroup(const Group * group) {
+	wxASSERT(wxIsMainThread());
+
 	if(!Group::isValid(group)) {
 		WXUtilities::showErrorMessage("Invalid group file.", "Invalid Group File", this);
 		return {};
@@ -947,6 +1013,8 @@ std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractSelectedFilesFromGr
 }
 
 std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractSelectedFilesFromCurrentGroup() {
+	wxASSERT(wxIsMainThread());
+
 	std::shared_ptr<const Group> group(std::dynamic_pointer_cast<const Group>(getCurrentGameFile()));
 
 	if(group == nullptr) {
@@ -958,10 +1026,14 @@ std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractSelectedFilesFromCu
 }
 
 std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractAllFilesFromGroup(const Group * group) {
+	wxASSERT(wxIsMainThread());
+
 	return extractFilesFromGroup(group, group->getFiles());
 }
 
 std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractAllFilesFromCurrentGroup() {
+	wxASSERT(wxIsMainThread());
+
 	std::shared_ptr<const Group> group(std::dynamic_pointer_cast<const Group>(getCurrentGameFile()));
 
 	if(group == nullptr) {
@@ -973,6 +1045,8 @@ std::vector<std::shared_ptr<GroupFile>> ProjectPanel::extractAllFilesFromCurrent
 }
 
 bool ProjectPanel::closeGameFilePanel(size_t gameFilePanelIndex) {
+	wxASSERT(wxIsMainThread());
+
 	std::shared_ptr<GameFile> gameFile(getGameFile(gameFilePanelIndex));
 
 	if(gameFile == nullptr) {
@@ -1011,6 +1085,8 @@ bool ProjectPanel::closeGameFilePanel(size_t gameFilePanelIndex) {
 }
 
 bool ProjectPanel::closeCurrentGameFilePanel() {
+	wxASSERT(wxIsMainThread());
+
 	int currentGameFilePanelIndex = m_notebook->GetSelection();
 
 	if(currentGameFilePanelIndex == wxNOT_FOUND) {
@@ -1025,6 +1101,8 @@ bool ProjectPanel::closeCurrentGameFilePanel() {
 }
 
 bool ProjectPanel::closeAllGameFilePanels() {
+	wxASSERT(wxIsMainThread());
+
 	while(m_notebook->GetPageCount() != 0) {
 		if(!closeCurrentGameFilePanel()) {
 			return false;

@@ -91,6 +91,8 @@ DukeForgeApplication::DukeForgeApplication()
 DukeForgeApplication::~DukeForgeApplication() { }
 
 void DukeForgeApplication::initialize() {
+	wxASSERT(wxIsMainThread());
+
 	m_dukeForge = std::make_shared<DukeForge>();
 	m_logSinkWX = std::make_shared<LogSinkWX>();
 
@@ -176,15 +178,21 @@ void DukeForgeApplication::initialize() {
 }
 
 void DukeForgeApplication::reload() {
+	wxASSERT(wxIsMainThread());
+
 	m_reloadRequired = true;
 	m_newDukeForgeFrame = new DukeForgeFrame();
 }
 
 void DukeForgeApplication::displayArgumentHelp() {
+	wxASSERT(wxIsMainThread());
+
 	wxMessageBox(DukeForge::getArgumentHelpInformation(), "Argument Information", wxOK | wxICON_INFORMATION);
 }
 
 void DukeForgeApplication::showWindow() {
+	wxASSERT(wxIsMainThread());
+
 	std::unique_ptr<wxProgressDialog> windowCreationProgressDialog(std::make_unique<wxProgressDialog>(
 		"Initializing",
 		BASE_INITIALIZATION_MESSAGE + "\nInitializing window...",
@@ -216,6 +224,8 @@ void DukeForgeApplication::showWindow() {
 }
 
 void DukeForgeApplication::onInitializationDone(DukeForgeInitializationDoneEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	if(event.wasSuccessful()) {
 		showWindow();
 	}
@@ -232,6 +242,8 @@ void DukeForgeApplication::onInitializationDone(DukeForgeInitializationDoneEvent
 }
 
 void DukeForgeApplication::onFrameClosed(wxCloseEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	SettingsManager * settings = SettingsManager::getInstance();
 
 	settings->windowPosition = WXUtilities::createPoint(m_dukeForgeFrame->GetPosition());
@@ -253,6 +265,8 @@ void DukeForgeApplication::onFrameClosed(wxCloseEvent & event) {
 }
 
 bool DukeForgeApplication::OnInit() {
+	wxASSERT(wxIsMainThread());
+
 	if(wxAppConsole::argc != 0) {
 		m_arguments = std::make_shared<ArgumentParser>(wxAppConsole::argc, wxAppConsole::argv);
 	}
@@ -268,6 +282,8 @@ bool DukeForgeApplication::OnInit() {
 }
 
 int DukeForgeApplication::OnExit() {
+	wxASSERT(wxIsMainThread());
+
 	LogSystem::getInstance()->removeLogSink(m_logSinkWX);
 
 	m_dukeForge->uninitialize();
@@ -276,6 +292,8 @@ int DukeForgeApplication::OnExit() {
 }
 
 void DukeForgeApplication::CleanUp() {
+	wxASSERT(wxIsMainThread());
+
 	m_logSinkWX.reset();
 	m_dukeForge.reset();
 
@@ -285,6 +303,8 @@ void DukeForgeApplication::CleanUp() {
 }
 
 void DukeForgeApplication::onReloadRequested() {
+	wxASSERT(wxIsMainThread());
+
 	reload();
 }
 

@@ -42,6 +42,8 @@ ReleaseNotesPanel::ReleaseNotesPanel(wxWindow * parent, wxWindowID windowID, con
 	, m_releaseDateText(nullptr)
 	, m_scrollableDescriptionWindow(nullptr)
 	, m_releaseDescriptionText(nullptr) {
+	wxASSERT(wxIsMainThread());
+
 	m_releaseComboBox = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, {}, 0, wxDefaultValidator, "Release Version");
 	m_releaseComboBox->SetEditable(false);
 	m_releaseComboBox->Bind(wxEVT_COMBOBOX, &ReleaseNotesPanel::onReleaseSelected, this);
@@ -95,6 +97,8 @@ void ReleaseNotesPanel::load() {
 }
 
 void ReleaseNotesPanel::setSelectedRelease(std::shared_ptr<GitHubRelease> release) {
+	wxASSERT(wxIsMainThread());
+
 	std::lock_guard<std::recursive_mutex> lock(m_releasesMutex);
 
 	m_selectedRelease = release;
@@ -114,6 +118,8 @@ void ReleaseNotesPanel::setSelectedRelease(std::shared_ptr<GitHubRelease> releas
 }
 
 void ReleaseNotesPanel::onReleasesLoaded(ReleasesLoadedEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	std::lock_guard<std::recursive_mutex> lock(m_releasesMutex);
 
 	if(m_releases == nullptr) {
@@ -136,6 +142,8 @@ void ReleaseNotesPanel::onReleasesLoaded(ReleasesLoadedEvent & event) {
 }
 
 void ReleaseNotesPanel::onReleaseSelected(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	std::lock_guard<std::recursive_mutex> lock(m_releasesMutex);
 
 	if(m_releases == nullptr) {

@@ -11,6 +11,8 @@ SunstormInteractiveMetadataPanel::SunstormInteractiveMetadataPanel(std::shared_p
 	, m_versionComboBox(nullptr)
 	, m_descriptionTextFields({ nullptr })
 	, m_runFileTextField(nullptr) {
+	wxASSERT(wxIsMainThread());
+
 	int border = 5;
 
 	wxFlexGridSizer * sizer = new wxFlexGridSizer(2, border, border);
@@ -69,6 +71,8 @@ SunstormInteractiveMetadataPanel::SunstormInteractiveMetadataPanel(std::shared_p
 SunstormInteractiveMetadataPanel::~SunstormInteractiveMetadataPanel() { }
 
 void SunstormInteractiveMetadataPanel::onTitleTextChanged(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	if(m_group == nullptr) {
 		return;
 	}
@@ -77,6 +81,8 @@ void SunstormInteractiveMetadataPanel::onTitleTextChanged(wxCommandEvent & event
 }
 
 void SunstormInteractiveMetadataPanel::onVersionSelected(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	int versionIndex = m_versionComboBox->GetSelection();
 
 	if(versionIndex == wxNOT_FOUND) {
@@ -94,6 +100,8 @@ void SunstormInteractiveMetadataPanel::onVersionSelected(wxCommandEvent & event)
 }
 
 void SunstormInteractiveMetadataPanel::onDescriptionTextChanged(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	if(m_group == nullptr) {
 		return;
 	}
@@ -109,6 +117,8 @@ void SunstormInteractiveMetadataPanel::onDescriptionTextChanged(wxCommandEvent &
 }
 
 void SunstormInteractiveMetadataPanel::onRunFileTextChanged(wxCommandEvent & event) {
+	wxASSERT(wxIsMainThread());
+
 	if(m_group == nullptr) {
 		return;
 	}

@@ -15,6 +15,8 @@ static constexpr uint8_t PIXEL_SCALE = 24;
 ColourTablePanel::ColourTablePanel(std::shared_ptr<ColourTable> colourTable, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style)
 	: wxPanel(parent, windowID, position, size, style)
 	, m_colourTable(colourTable) {
+	wxASSERT(wxIsMainThread());
+
 	SetBackgroundColour(parent->GetBackgroundColour());
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	SetMinSize(wxSize(COLOUR_TABLE_RENDER_WIDTH * PIXEL_SCALE, COLOUR_TABLE_RENDER_HEIGHT * PIXEL_SCALE));
@@ -34,6 +36,8 @@ ColourTablePanel::~ColourTablePanel() {
 }
 
 size_t ColourTablePanel::getVerticalOffset() const {
+	wxASSERT(wxIsMainThread());
+
 	if(!m_colourTable->hasName()) {
 		return 0u;
 	}
@@ -42,6 +46,8 @@ size_t ColourTablePanel::getVerticalOffset() const {
 }
 
 void ColourTablePanel::updateColourTableNameLabel() {
+	wxASSERT(wxIsMainThread());
+
 	m_colourTableNameLabel->SetLabelText(wxString::FromUTF8(m_colourTable->getName()));
 	m_colourTableNameLabel->Show(m_colourTable->hasName());
 
