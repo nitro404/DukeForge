@@ -17,9 +17,12 @@
 	#include <wx/wx.h>
 #endif
 
+#include <wx/progdlg.h>
+
 #include <memory>
 
 class LogSinkWX;
+class DukeForgeInitializationProgressUpdate;
 class DukeForgeInitializationDoneEvent;
 
 class DukeForgeApplication : public wxApp {
@@ -40,6 +43,7 @@ public:
 private:
 	void initialize();
 	void showWindow();
+	void onInitializationProgressUpdate(DukeForgeInitializationProgressUpdate & event);
 	void onInitializationDone(DukeForgeInitializationDoneEvent & event);
 	void onReloadRequested();
 
@@ -50,6 +54,8 @@ private:
 	DukeForgeFrame * m_newDukeForgeFrame;
 	boost::signals2::connection m_dukeForgeFrameReloadRequestedConnection;
 	bool m_reloadRequired;
+	std::future<bool> m_initializeFuture;
+	std::unique_ptr<wxProgressDialog> m_initializingProgressDialog;
 	boost::signals2::connection m_dukeForgeInitializationProgressConnection;
 
 	DukeForgeApplication(const DukeForgeApplication &) = delete;

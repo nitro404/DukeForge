@@ -25,6 +25,7 @@ DukeForge::DukeForge()
 	: Application()
 	, m_initialized(false)
 	, m_initializing(false)
+	, m_initializationAborted(false)
 	, m_initializationStep(0u)
 	, m_argumentHandlingFailed(false) {
 	FactoryRegistry & factoryRegistry = FactoryRegistry::getInstance();
@@ -60,33 +61,31 @@ bool DukeForge::isInitializing() const {
 	return m_initializing;
 }
 
+bool DukeForge::wasInitializationAborted() const {
+	return m_initializationAborted;
+}
+
 uint8_t DukeForge::numberOfInitializationSteps() const {
 	return NUMBER_OF_INITIALIZATION_STEPS;
 }
 
-bool DukeForge::notifyInitializationProgress(const std::string & description, bool * aborted) {
-	if(!*initializationProgress(m_initializationStep++, NUMBER_OF_INITIALIZATION_STEPS, description)) {
-		if(aborted != nullptr) {
-			*aborted = true;
-		}
+bool DukeForge::notifyInitializationProgress(const std::string & description) {
+	initializationProgress(m_initializationStep++, NUMBER_OF_INITIALIZATION_STEPS, description);
 
-		return false;
-	}
-
-	return true;
+	return !m_initializationAborted;
 }
 
-bool DukeForge::initialize(int argc, char * argv[], bool * aborted) {
+bool DukeForge::initialize(int argc, char * argv[]) {
 	std::shared_ptr<ArgumentParser> arguments;
 
 	if(argc != 0) {
 		arguments = std::make_shared<ArgumentParser>(argc, argv);
 	}
 
-	return initialize(arguments, aborted);
+	return initialize(arguments);
 }
 
-bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments, bool * aborted) {
+bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments) {
 	std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
 	if(m_initialized || m_initializing) {
@@ -98,7 +97,7 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments, bool * abo
 	m_initializationStep = 0;
 	m_argumentHandlingFailed = false;
 
-	if(!notifyInitializationProgress("Parsing Arguments", aborted)) {
+	if(!notifyInitializationProgress("Parsing Arguments")) {
 		m_initializing = false;
 		return false;
 	}
@@ -107,7 +106,7 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments, bool * abo
 		m_arguments = arguments;
 	}
 
-	if(!notifyInitializationProgress("Loading Settings", aborted)) {
+	if(!notifyInitializationProgress("Loading Settings")) {
 		m_initializing = false;
 		return false;
 	}
@@ -118,7 +117,7 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments, bool * abo
 		settings->load(m_arguments.get());
 	}
 
-	if(!notifyInitializationProgress("Initializing HTTP Service", aborted)) {
+	if(!notifyInitializationProgress("Initializing HTTP Service")) {
 		m_initializing = false;
 		return false;
 	}
@@ -150,7 +149,7 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments, bool * abo
 
 	httpService->checkForInternetConnectivity();
 
-	if(!notifyInitializationProgress("Initializing Time Zone Data Manager", aborted)) {
+	if(!notifyInitializationProgress("Initializing Time Zone Data Manager")) {
 		m_initializing = false;
 		return false;
 	}
@@ -200,6 +199,18 @@ void DukeForge::uninitialize() {
 	m_arguments.reset();
 
 	m_initialized = false;
+}
+
+bool DukeForge::abortInitialization() {
+	if(!m_initializing) {
+		return false;
+	}
+
+	spdlog::info("Aborting initialization.");
+
+	m_initializationAborted = true;
+
+	return true;
 }
 
 bool DukeForge::didArgumentHandlingFail() const {

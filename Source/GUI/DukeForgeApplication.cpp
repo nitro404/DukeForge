@@ -19,7 +19,6 @@
 #include <tiffio.h>
 #include <wx/app.h>
 #include <wx/cmdline.h>
-#include <wx/progdlg.h>
 #include <wx/version.h>
 
 #if !wxUSE_UNICODE || wxUSE_UNICODE_UTF8
@@ -41,6 +40,47 @@
 
 #define QUOTE(name) #name
 #define TOSTRING(macro) QUOTE(macro)
+
+wxDECLARE_EVENT(EVENT_INITIALIZATION_PROGRESS_UPDATE, DukeForgeInitializationProgressUpdate);
+
+class DukeForgeInitializationProgressUpdate final : public wxEvent {
+public:
+	DukeForgeInitializationProgressUpdate(uint8_t initializationStep = 0u, uint8_t initializationStepCount = 0u, std::string description = {})
+		: wxEvent(0, EVENT_INITIALIZATION_PROGRESS_UPDATE)
+		, m_initializationStep(initializationStep)
+		, m_initializationStepCount(initializationStepCount)
+		, m_description(description) { }
+
+	~DukeForgeInitializationProgressUpdate() override { }
+
+	// wxEvent Virtuals
+	wxEvent * Clone() const override {
+		return new DukeForgeInitializationProgressUpdate(*this);
+	}
+
+	uint8_t getInitializationStep() const {
+		return m_initializationStep;
+	}
+
+	uint8_t getInitializationStepCount() const {
+		return m_initializationStepCount;
+	}
+
+	const std::string & getDescription() const {
+		return m_description;
+	}
+
+	DECLARE_DYNAMIC_CLASS(DukeForgeInitializationProgressUpdate);
+private:
+
+	uint8_t m_initializationStep;
+	uint8_t m_initializationStepCount;
+	std::string m_description;
+};
+
+IMPLEMENT_DYNAMIC_CLASS(DukeForgeInitializationProgressUpdate, wxEvent);
+
+wxDEFINE_EVENT(EVENT_INITIALIZATION_PROGRESS_UPDATE, DukeForgeInitializationProgressUpdate);
 
 wxDECLARE_EVENT(EVENT_INITIALIZATION_DONE, DukeForgeInitializationDoneEvent);
 
@@ -131,50 +171,38 @@ void DukeForgeApplication::initialize() {
 		settings->analyticsConfirmationAcknowledged = true;
 	}
 
-	std::unique_ptr<wxProgressDialog> initializingProgressDialog(std::make_unique<wxProgressDialog>(
-		"Initializing",
-		BASE_INITIALIZATION_MESSAGE,
-		m_dukeForge->numberOfInitializationSteps(),
-		nullptr,
-		wxPD_AUTO_HIDE | wxPD_CAN_ABORT
-	));
+	m_initializingProgressDialog = std::make_unique<wxProgressDialog>("Initializing", BASE_INITIALIZATION_MESSAGE, m_dukeForge->numberOfInitializationSteps(), nullptr, wxPD_AUTO_HIDE | wxPD_CAN_ABORT);
 
 #if defined(DUKEFORGE_ICON)
 	initializingProgressDialog->SetIcon(wxICON(DUKEFORGE_ICON));
 #endif // DUKEFORGE_ICON
 
-	initializingProgressDialog->Fit();
+	m_initializingProgressDialog->Fit();
 
-	m_dukeForgeInitializationProgressConnection = m_dukeForge->initializationProgress.connect([this, &initializingProgressDialog](uint8_t initializationStep, uint8_t initializationStepCount, std::string description) {
-		bool updateResult = initializingProgressDialog->Update(initializationStep, fmt::format("{}\n{}...", BASE_INITIALIZATION_MESSAGE, description));
-		initializingProgressDialog->Fit();
-
-		return updateResult;
+	m_dukeForgeInitializationProgressConnection = m_dukeForge->initializationProgress.connect([this](uint8_t initializationStep, uint8_t initializationStepCount, std::string description) {
+		QueueEvent(new DukeForgeInitializationProgressUpdate(initializationStep, initializationStepCount, std::move(description)));
 	});
 
+	Bind(EVENT_INITIALIZATION_PROGRESS_UPDATE, &DukeForgeApplication::onInitializationProgressUpdate, this);
 	Bind(EVENT_INITIALIZATION_DONE, &DukeForgeApplication::onInitializationDone, this);
 
-	bool aborted = false;
+	m_initializeFuture = std::async(std::launch::async, [this]() mutable {
+		const bool initialized = m_dukeForge->initialize(m_arguments);
 
-	std::future<bool> initializeFuture(std::async(std::launch::async, [this, &aborted]() mutable {
-		return m_dukeForge->initialize(m_arguments, &aborted);
-	}));
+		if(m_dukeForge->wasInitializationAborted()) {
+			spdlog::info("Initialization aborted!");
 
-	initializeFuture.wait();
+			QueueEvent(new DukeForgeInitializationDoneEvent(false, true));
+		}
+		else if(!initialized) {
+			QueueEvent(new DukeForgeInitializationDoneEvent(false, false));
+		}
+		else {
+			QueueEvent(new DukeForgeInitializationDoneEvent(true, true));
+		}
 
-	bool initialized = initializeFuture.get();
-
-	initializingProgressDialog = nullptr;
-
-	if(aborted) {
-		QueueEvent(new DukeForgeInitializationDoneEvent(false, true));
-	}
-	else if(!initialized) {
-		QueueEvent(new DukeForgeInitializationDoneEvent(false, false));
-	}
-	else {
-		QueueEvent(new DukeForgeInitializationDoneEvent(true, true));
-	}
+		return initialized;
+	});
 }
 
 void DukeForgeApplication::reload() {
@@ -193,16 +221,10 @@ void DukeForgeApplication::displayArgumentHelp() {
 void DukeForgeApplication::showWindow() {
 	wxASSERT(wxIsMainThread());
 
-	std::unique_ptr<wxProgressDialog> windowCreationProgressDialog(std::make_unique<wxProgressDialog>(
-		"Initializing",
-		BASE_INITIALIZATION_MESSAGE + "\nInitializing window...",
-		m_dukeForge->numberOfInitializationSteps() + 2,
-		nullptr,
-		wxPD_AUTO_HIDE | wxPD_CAN_ABORT
-	));
+	std::unique_ptr<wxProgressDialog> windowCreationProgressDialog(std::make_unique<wxProgressDialog>("Initializing", BASE_INITIALIZATION_MESSAGE + "\nInitializing window...", m_dukeForge->numberOfInitializationSteps() + 2, nullptr, wxPD_AUTO_HIDE | wxPD_CAN_ABORT));
 
 #if defined(DUKEFORGE_ICON)
-    windowCreationProgressDialog->SetIcon(wxICON(DUKEFORGE_ICON));
+	windowCreationProgressDialog->SetIcon(wxICON(DUKEFORGE_ICON));
 #endif // DUKEFORGE_ICON
 
 	windowCreationProgressDialog->Fit();
@@ -223,8 +245,27 @@ void DukeForgeApplication::showWindow() {
 	windowCreationProgressDialog->Update(windowCreationProgressDialog->GetValue() + 1, windowCreationProgressDialog->GetMessage());
 }
 
+void DukeForgeApplication::onInitializationProgressUpdate(DukeForgeInitializationProgressUpdate & event) {
+	wxASSERT(wxIsMainThread());
+
+	if(m_initializingProgressDialog == nullptr) {
+		return;
+	}
+
+	bool updateResult = m_initializingProgressDialog->Update(event.getInitializationStep(), fmt::format("{}\n{}...", BASE_INITIALIZATION_MESSAGE, event.getDescription()));
+	m_initializingProgressDialog->Fit();
+
+	if(!updateResult) {
+		spdlog::info("Trying to abort initialization.");
+
+		m_dukeForge->abortInitialization();
+	}
+}
+
 void DukeForgeApplication::onInitializationDone(DukeForgeInitializationDoneEvent & event) {
 	wxASSERT(wxIsMainThread());
+
+	m_initializingProgressDialog.reset();
 
 	if(event.wasSuccessful()) {
 		showWindow();
@@ -276,7 +317,9 @@ bool DukeForgeApplication::OnInit() {
 		return false;
 	}
 
-	initialize();
+	CallAfter([this]() {
+		initialize();
+	});
 
 	return true;
 }
