@@ -30,6 +30,7 @@ ProjectPanel::ProjectPanel(wxWindow * parent, wxWindowID windowID, const wxPoint
 	, m_notebook(nullptr) {
 	wxASSERT(wxIsMainThread());
 
+	SetDropTarget(this);
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 
 	m_notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP | wxNB_MULTILINE, "Game Files");
@@ -375,6 +376,20 @@ bool ProjectPanel::openGameFile(const std::string & filePath) {
 	addGameFilePanel(gameFilePanel);
 
 	return true;
+}
+
+size_t ProjectPanel::openGameFiles(const std::vector<std::string> & gameFilePaths) {
+	wxASSERT(wxIsMainThread());
+
+	size_t openedGameFileCount = 0;
+
+	for(size_t i = 0; i < gameFilePaths.size(); i++) {
+		if(openGameFile(gameFilePaths[i])) {
+			openedGameFileCount++;
+		}
+	}
+
+	return openedGameFileCount;
 }
 
 size_t ProjectPanel::openGameFiles() {
@@ -1110,6 +1125,10 @@ bool ProjectPanel::closeAllGameFilePanels() {
 	}
 
 	return true;
+}
+
+bool ProjectPanel::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString & filePaths) {
+	return openGameFiles(WXUtilities::createItemStringList(filePaths)) != 0u;
 }
 
 void ProjectPanel::onNotebookPageChanged(wxBookCtrlEvent & event) {

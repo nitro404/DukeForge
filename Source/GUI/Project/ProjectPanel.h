@@ -13,6 +13,7 @@
 #endif
 
 #include <wx/bookctrl.h>
+#include <wx/dnd.h>
 
 #include <memory>
 #include <string>
@@ -24,7 +25,8 @@ class GroupFile;
 class GroupPanel;
 class SignalConnectionGroup;
 
-class ProjectPanel final : public wxPanel {
+class ProjectPanel final : public wxPanel,
+						   public wxFileDropTarget {
 public:
 	ProjectPanel(wxWindow * parent, wxWindowID windowID = wxID_ANY, const wxPoint & position = wxDefaultPosition, const wxSize & size = wxDefaultSize, long style = wxTAB_TRAVERSAL | wxNO_BORDER);
 	~ProjectPanel() override;
@@ -52,6 +54,7 @@ public:
 	void addGameFilePanel(GameFilePanel * gameFilePanel);
 	bool newGameFile();
 	bool openGameFile(const std::string & filePath);
+	size_t openGameFiles(const std::vector<std::string> & gameFilePaths);
 	size_t openGameFiles();
 	bool createGroupFromDirectory(const std::string & directoryPath);
 	bool createGroupFromDirectory();
@@ -82,6 +85,7 @@ public:
 	boost::signals2::signal<void (ProjectPanel & /* projectPanel */, GameFilePanel & /* gameFilePanel */)> groupFileSelectionChanged;
 
 private:
+	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString & filePaths) override;
 	void onNotebookPageChanged(wxBookCtrlEvent & event);
 	void onGameFileModified(GameFilePanel & gameFilePanel);
 	void onGroupFileSelectionChanged(GroupPanel & groupPanel);

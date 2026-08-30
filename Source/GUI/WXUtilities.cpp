@@ -42,6 +42,16 @@ namespace WXUtilities {
 		return itemsArrayString;
 	}
 
+	std::vector<std::string> createItemStringList(const wxArrayString & items) {
+		std::vector<std::string> itemStringList;
+
+		for(size_t i = 0; i < items.GetCount(); i++) {
+			itemStringList.emplace_back(items[i].ToStdString());
+		}
+
+		return itemStringList;
+	}
+
 	wxGenericHyperlinkCtrl * createHyperlink(wxWindow * parent, wxWindowID id, const wxString & label, const wxString & url, const wxPoint & position, const wxSize & size, long style , const wxString & name) {
 		// Note: Generic hyperlinks assert if both the label and URL are empty, so a non-empty label must be forced to avoid assertion failures.
 		wxGenericHyperlinkCtrl * hyperlink = new Hyperlink(parent, id, label.empty() ? " " : label.ToStdString(), url, position, size, style, name.ToStdString());

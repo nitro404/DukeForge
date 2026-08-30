@@ -34,6 +34,7 @@ namespace WXUtilities {
 	wxColour createWXColour(const Colour & colour);
 	Colour createColour(const wxColour & colour);
 	wxArrayString createItemWXArrayString(const std::vector<std::string> & items);
+	std::vector<std::string> createItemStringList(const wxArrayString & items);
 	template <typename E>
 	wxArrayString createEnumWXArrayString(const std::vector<E> & disabledEnumValues = {});
 	wxGenericHyperlinkCtrl * createHyperlink(wxWindow * parent, wxWindowID id, const wxString & label, const wxString & url, const wxPoint & position = wxDefaultPosition, const wxSize & size = wxDefaultSize, long style = wxHL_DEFAULT_STYLE, const wxString & name = wxASCII_STR(wxHyperlinkCtrlNameStr));
