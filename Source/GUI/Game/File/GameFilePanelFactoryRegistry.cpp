@@ -235,7 +235,7 @@ GameFilePanel * GameFilePanelFactoryRegistry::createNewGameFilePanel(std::unique
 	GameFilePanelFactoryMap::const_iterator gameFilePanelFactoryIterator(getGameFilePanelFactoryForFilePath(gameFile->getDefaultFileFormatExtension()));
 
 	if(gameFilePanelFactoryIterator == m_gameFilePanelFactories.cend()) {
-		spdlog::debug("Could not find game file panel factory for '{}'.");
+		spdlog::debug("Could not find game file panel factory for '{}'.", gameFile->getDefaultFileFormatExtension());
 		return nullptr;
 	}
 

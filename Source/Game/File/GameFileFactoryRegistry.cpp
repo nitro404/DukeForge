@@ -281,7 +281,7 @@ std::unique_ptr<GameFile> GameFileFactoryRegistry::createNewGameFile(const std::
 	GameFileFactoryMap::const_iterator gameFileFactoryIterator(getGameFileFactoryForFilePath(filePathOrExtension));
 
 	if(gameFileFactoryIterator == m_gameFileFactories.cend()) {
-		spdlog::debug("Could not find game file factory for '{}'.");
+		spdlog::debug("Could not find game file factory for '{}'.", Utilities::getFileExtension(filePathOrExtension));
 		return nullptr;
 	}
 
@@ -294,7 +294,7 @@ std::unique_ptr<GameFile> GameFileFactoryRegistry::readGameFileFrom(const ByteBu
 	GameFileFactoryMap::const_iterator gameFileFactoryIterator(getGameFileFactoryForFilePath(filePathOrExtension));
 
 	if(gameFileFactoryIterator == m_gameFileFactories.cend()) {
-		spdlog::debug("Could not find game file factory for '{}'.");
+		spdlog::debug("Could not find game file factory for '{}'.", Utilities::getFileExtension(filePathOrExtension));
 		return nullptr;
 	}
 
@@ -307,7 +307,7 @@ std::unique_ptr<GameFile> GameFileFactoryRegistry::loadGameFileFrom(const std::s
 	GameFileFactoryMap::const_iterator gameFileFactoryIterator(getGameFileFactoryForFilePath(filePath));
 
 	if(gameFileFactoryIterator == m_gameFileFactories.cend()) {
-		spdlog::debug("Could not find game file factory for '{}'.");
+		spdlog::debug("Could not find game file factory for '{}'.", Utilities::getFileExtension(filePath));
 		return nullptr;
 	}
 
