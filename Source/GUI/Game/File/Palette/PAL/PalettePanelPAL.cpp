@@ -8,6 +8,8 @@ PalettePanelPAL::PalettePanelPAL(std::unique_ptr<PalettePAL> palette, wxWindow *
 	: PalettePanel(std::move(palette), parent, windowID, position, size, style) {
 	const std::shared_ptr<const PalettePAL> palettePAL(getPalettePAL());
 
+	Freeze();
+
 	wxPanel * versionPropertyPanel = new wxPanel(m_palettePropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxStaticText * versionLabel = new wxStaticText(versionPropertyPanel, wxID_ANY, "Version:", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
@@ -46,6 +48,8 @@ PalettePanelPAL::PalettePanelPAL(std::unique_ptr<PalettePAL> palette, wxWindow *
 	m_palettePropertiesSizer->Add(versionPropertyPanel, 0, wxLEFT | wxRIGHT, border);
 	m_palettePropertiesSizer->Add(endiannessPropertyPanel, 0, wxLEFT | wxRIGHT, border);
 	m_palettePropertiesSizer->Add(bytesPerColourPropertyPanel, 0, wxLEFT | wxRIGHT, border);
+
+	Thaw();
 }
 
 PalettePanelPAL::~PalettePanelPAL() { }

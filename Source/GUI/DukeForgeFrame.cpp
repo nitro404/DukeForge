@@ -77,6 +77,8 @@ bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
 		return std::make_unique<GameFilePanelFactoryRegistry>();
 	});
 
+	Freeze();
+
 #if wxUSE_MENUS
 	wxMenu * gameFileMenu = new wxMenu();
 	m_newGameFileMenuItem = new wxMenuItem(gameFileMenu, wxID_NEW, "&New File\tCtrl-N", "Creates a new game file", wxITEM_NORMAL);
@@ -159,6 +161,8 @@ bool DukeForgeFrame::initialize(std::shared_ptr<DukeForge> dukeForge) {
 	m_notebook->AddPage(consolePanel, "Console");
 
 	updateMenu();
+
+	Thaw();
 
 	m_activeProjectPanelChangedConnection = activeProjectPanelChanged.connect(std::bind(&DukeForgeFrame::onActiveProjectPanelChanged, this, std::placeholders::_1));
 

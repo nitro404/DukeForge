@@ -6,6 +6,8 @@
 
 PalettePanelACT::PalettePanelACT(std::unique_ptr<PaletteACT> palette, wxWindow * parent, wxWindowID windowID, const wxPoint & position, const wxSize & size, long style)
 	: PalettePanel(std::move(palette), parent, windowID, position, size, style) {
+	Freeze();
+
 	wxPanel * bytesPerColourPropertyPanel = new wxPanel(m_palettePropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxStaticText * bytesPerColourLabel = new wxStaticText(bytesPerColourPropertyPanel, wxID_ANY, "Bytes Per Colour:", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
@@ -32,6 +34,8 @@ PalettePanelACT::PalettePanelACT(std::unique_ptr<PaletteACT> palette, wxWindow *
 
 	m_palettePropertiesSizer->Add(endiannessPropertyPanel, 0, wxLEFT | wxRIGHT, border);
 	m_palettePropertiesSizer->Add(bytesPerColourPropertyPanel, 0, wxLEFT | wxRIGHT, border);
+
+	Thaw();
 }
 
 PalettePanelACT::~PalettePanelACT() { }

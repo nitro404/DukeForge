@@ -4,6 +4,8 @@ PalettePanelKPL::PalettePanelKPL(std::unique_ptr<PaletteKPL> palette, wxWindow *
 	: PalettePanel(std::move(palette), parent, windowID, position, size, style) {
 	const std::shared_ptr<const PaletteKPL> paletteKPL(getPaletteKPL());
 
+	Freeze();
+
 	wxPanel * readOnlyPropertyPanel = new wxPanel(m_palettePropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxStaticText * readOnlyLabel = new wxStaticText(readOnlyPropertyPanel, wxID_ANY, "Read Only:", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
@@ -18,6 +20,8 @@ PalettePanelKPL::PalettePanelKPL(std::unique_ptr<PaletteKPL> palette, wxWindow *
 	readOnlyPropertyPanel->SetSizer(readOnlyPropertySizer);
 
 	m_palettePropertiesSizer->Add(readOnlyPropertyPanel, 0, wxLEFT | wxRIGHT, border);
+
+	Thaw();
 }
 
 PalettePanelKPL::~PalettePanelKPL() { }

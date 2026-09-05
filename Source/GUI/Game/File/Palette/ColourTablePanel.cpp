@@ -17,6 +17,8 @@ ColourTablePanel::ColourTablePanel(std::shared_ptr<ColourTable> colourTable, wxW
 	, m_colourTable(colourTable) {
 	wxASSERT(wxIsMainThread());
 
+	Freeze();
+
 	SetBackgroundColour(parent->GetBackgroundColour());
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	SetMinSize(wxSize(COLOUR_TABLE_RENDER_WIDTH * PIXEL_SCALE, COLOUR_TABLE_RENDER_HEIGHT * PIXEL_SCALE));
@@ -26,6 +28,8 @@ ColourTablePanel::ColourTablePanel(std::shared_ptr<ColourTable> colourTable, wxW
 
 	// Note: For some reason ampersands are not rendered if you assign the text contents upon creation rather than through the set label text function
 	updateColourTableNameLabel();
+
+	Thaw();
 
 	Bind(wxEVT_LEFT_DOWN, &ColourTablePanel::onMouseDown, this);
 	Bind(wxEVT_PAINT, &ColourTablePanel::onPaint, this);

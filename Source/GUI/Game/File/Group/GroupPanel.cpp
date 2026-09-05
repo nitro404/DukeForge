@@ -24,6 +24,8 @@ GroupPanel::GroupPanel(std::unique_ptr<Group> group, wxWindow * parent, wxWindow
 	, m_fileInfoBox(nullptr)
 	, m_fileInfoPanel(nullptr)
 	, m_fileInfoBoxSizer(nullptr) {
+	Freeze();
+
 	wxPanel * groupPropertiesPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxPanel * numberOfFilesPropertyPanel = new wxPanel(groupPropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -91,6 +93,8 @@ GroupPanel::GroupPanel(std::unique_ptr<Group> group, wxWindow * parent, wxWindow
 	SetSizer(m_groupInfoSizer);
 
 	update();
+
+	Thaw();
 }
 
 GroupPanel::~GroupPanel() { }

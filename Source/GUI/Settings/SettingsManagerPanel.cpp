@@ -23,7 +23,9 @@ SettingsManagerPanel::SettingsManagerPanel(std::shared_ptr<DukeForge> dukeForge,
 
 	SettingsManager * settings = SettingsManager::getInstance();
 
-	int wrapSizerOrientation = wxHORIZONTAL;
+	Freeze();
+
+	const int wrapSizerOrientation = wxHORIZONTAL;
 
 	wxWrapSizer * generalSettingsSizer = new wxWrapSizer(wrapSizerOrientation);
 	wxStaticBox * generalSettingsBox = new wxStaticBox(this, wxID_ANY, "General", wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT, "General");
@@ -106,6 +108,8 @@ SettingsManagerPanel::SettingsManagerPanel(std::shared_ptr<DukeForge> dukeForge,
 	settingsPanelSizer->AddGrowableCol(0, 3);
 	settingsPanelSizer->AddGrowableCol(1, 1);
 	SetSizerAndFit(settingsPanelSizer);
+
+	Thaw();
 
 	for(SettingPanel * settingPanel : m_settingsPanels) {
 		m_settingModifiedConnections.push_back(settingPanel->settingModified.connect(std::bind(&SettingsManagerPanel::onSettingModified, this, std::placeholders::_1)));

@@ -30,6 +30,8 @@ ProjectPanel::ProjectPanel(wxWindow * parent, wxWindowID windowID, const wxPoint
 	, m_notebook(nullptr) {
 	wxASSERT(wxIsMainThread());
 
+	Freeze();
+
 	SetDropTarget(this);
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 
@@ -45,6 +47,8 @@ ProjectPanel::ProjectPanel(wxWindow * parent, wxWindowID windowID, const wxPoint
 	SetSizerAndFit(ProjectPanelSizer);
 
 	updateGameFilePanelNames();
+
+	Thaw();
 }
 
 ProjectPanel::~ProjectPanel() { }

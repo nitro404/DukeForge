@@ -10,6 +10,8 @@ PalettePanelDAT::PalettePanelDAT(std::unique_ptr<PaletteDAT> palette, wxWindow *
 	, m_numberOfSwapTablesText(nullptr) {
 	const std::shared_ptr<const PaletteDAT> paletteDAT(getPaletteDAT());
 
+	Freeze();
+
 	wxPanel * numberOfShadeTablesPropertyPanel = new wxPanel(m_palettePropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxStaticText * numberOfShadeTablesLabel = new wxStaticText(numberOfShadeTablesPropertyPanel, wxID_ANY, "Number of Shade Tables:", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
@@ -60,6 +62,8 @@ PalettePanelDAT::PalettePanelDAT(std::unique_ptr<PaletteDAT> palette, wxWindow *
 	m_palettePropertiesSizer->Add(numberOfSwapTablesPropertyPanel, 0, wxLEFT | wxRIGHT, border);
 	m_palettePropertiesSizer->Add(endiannessPropertyPanel, 0, wxLEFT | wxRIGHT, border);
 	m_palettePropertiesSizer->Add(bytesPerColourPropertyPanel, 0, wxLEFT | wxRIGHT, border);
+
+	Thaw();
 }
 
 PalettePanelDAT::~PalettePanelDAT() { }

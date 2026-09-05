@@ -4,6 +4,8 @@ PalettePanelJASC::PalettePanelJASC(std::unique_ptr<PaletteJASC> palette, wxWindo
 	: PalettePanel(std::move(palette), parent, windowID, position, size, style) {
 	const std::shared_ptr<const PaletteJASC> paletteJASC(getPaletteJASC());
 
+	Freeze();
+
 	wxPanel * versionPropertyPanel = new wxPanel(m_palettePropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxStaticText * versionLabel = new wxStaticText(versionPropertyPanel, wxID_ANY, "Version:", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
@@ -18,6 +20,8 @@ PalettePanelJASC::PalettePanelJASC(std::unique_ptr<PaletteJASC> palette, wxWindo
 	versionPropertyPanel->SetSizer(versionPropertySizer);
 
 	m_palettePropertiesSizer->Add(versionPropertyPanel, 0, wxLEFT | wxRIGHT, border);
+
+	Thaw();
 }
 
 PalettePanelJASC::~PalettePanelJASC() { }

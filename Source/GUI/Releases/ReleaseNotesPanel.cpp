@@ -44,6 +44,8 @@ ReleaseNotesPanel::ReleaseNotesPanel(wxWindow * parent, wxWindowID windowID, con
 	, m_releaseDescriptionText(nullptr) {
 	wxASSERT(wxIsMainThread());
 
+	Freeze();
+
 	m_releaseComboBox = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, {}, 0, wxDefaultValidator, "Release Version");
 	m_releaseComboBox->SetEditable(false);
 	m_releaseComboBox->Bind(wxEVT_COMBOBOX, &ReleaseNotesPanel::onReleaseSelected, this);
@@ -78,6 +80,8 @@ ReleaseNotesPanel::ReleaseNotesPanel(wxWindow * parent, wxWindowID windowID, con
 	releaseNotesSizer->AddGrowableRow(2, 1);
 	releaseNotesSizer->AddGrowableCol(0, 1);
 	SetSizer(releaseNotesSizer);
+
+	Thaw();
 
 	Bind(EVENT_RELEASES_LOADED, &ReleaseNotesPanel::onReleasesLoaded, this);
 }

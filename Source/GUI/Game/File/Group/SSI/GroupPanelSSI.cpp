@@ -7,6 +7,8 @@ GroupPanelSSI::GroupPanelSSI(std::unique_ptr<GroupSSI> group, wxWindow * parent,
 	, m_ssiMetadataBox(nullptr)
 	, m_ssiMetadataPanel(nullptr)
 {
+	Freeze();
+
 	const int border = 5;
 
 	std::shared_ptr<GroupSSI> groupSSI(std::dynamic_pointer_cast<GroupSSI>(getGroup()));
@@ -22,6 +24,8 @@ GroupPanelSSI::GroupPanelSSI(std::unique_ptr<GroupSSI> group, wxWindow * parent,
 
 	m_groupInfoSizer->Add(m_ssiMetadataBox, wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND | wxHORIZONTAL, border);
 	m_groupInfoSizer->AddGrowableRow(2, 0);
+
+	Thaw();
 }
 
 GroupPanelSSI::~GroupPanelSSI() { }

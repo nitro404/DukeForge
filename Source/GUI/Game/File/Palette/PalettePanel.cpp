@@ -25,6 +25,8 @@ PalettePanel::PalettePanel(std::unique_ptr<Palette> palette, wxWindow * parent, 
 	, m_colourTablesScrolledWindowSizer(nullptr) {
 	wxASSERT(wxIsMainThread());
 
+	Freeze();
+
 	m_palettePropertiesPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
 	wxPanel * numberOfColourTablesPropertyPanel = new wxPanel(m_palettePropertiesPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -81,6 +83,8 @@ PalettePanel::PalettePanel(std::unique_ptr<Palette> palette, wxWindow * parent, 
 	SetSizer(m_paletteInfoSizer);
 
 	update();
+
+	Thaw();
 }
 
 PalettePanel::~PalettePanel() { }
