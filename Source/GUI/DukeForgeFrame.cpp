@@ -46,9 +46,9 @@ DukeForgeFrame::DukeForgeFrame()
 	, m_settingsManagerPanel(nullptr) {
 	wxASSERT(wxIsMainThread());
 
-#if defined(DUKEFORGE_ICON)
+#if defined(WINDOWS)
 	SetIcon(wxICON(DUKEFORGE_ICON));
-#endif // DUKEFORGE_ICON
+#endif // WINDOWS
 }
 
 DukeForgeFrame::~DukeForgeFrame() {
