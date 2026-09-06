@@ -369,8 +369,7 @@ bool DukeForgeFrame::closeProjectPanel(size_t projectPanelIndex) {
 
 	const int currentProjectPanelIndex = m_notebook->GetSelection();
 
-	m_notebook->RemovePage(projectPanelIndex);
-	delete projectPanel;
+	m_notebook->DeletePage(projectPanelIndex);
 	m_notebook->Refresh();
 
 	if(projectPanelIndex == currentProjectPanelIndex) {

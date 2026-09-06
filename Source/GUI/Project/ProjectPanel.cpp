@@ -1091,9 +1091,7 @@ bool ProjectPanel::closeGameFilePanel(size_t gameFilePanelIndex) {
 
 	const int currentGameFilePanelIndex = m_notebook->GetSelection();
 
-	GameFilePanel * gameFilePanel = getGameFilePanel(gameFilePanelIndex);
-	m_notebook->RemovePage(gameFilePanelIndex);
-	delete gameFilePanel;
+	m_notebook->DeletePage(gameFilePanelIndex);
 	m_notebook->Refresh();
 
 	if(gameFilePanelIndex == currentGameFilePanelIndex) {
