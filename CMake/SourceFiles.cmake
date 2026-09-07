@@ -145,6 +145,7 @@ set(GUI_SOURCE_FILES
 	GUI/MetadataPanel.cpp
 	GUI/Project/ProjectPanel.h
 	GUI/Project/ProjectPanel.cpp
+	GUI/Project/ProjectPanelDropTarget.cpp
 	GUI/Releases/ReleaseNotesPanel.h
 	GUI/Releases/ReleaseNotesPanel.cpp
 	GUI/SettingPanel.h

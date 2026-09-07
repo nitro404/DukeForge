@@ -25,9 +25,22 @@ class GroupFile;
 class GroupPanel;
 class SignalConnectionGroup;
 
-class ProjectPanel final : public wxPanel,
-						   public wxFileDropTarget {
+class ProjectPanel final : public wxPanel {
 public:
+	class DropTarget final : public wxFileDropTarget {
+	public:
+		DropTarget();
+		~DropTarget() override;
+
+		bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString & filePaths) override;
+
+		boost::signals2::signal<void (std::vector<std::string> /* filePaths */)> filesDropped;
+
+	private:
+		DropTarget(const DropTarget &) = delete;
+		const DropTarget & operator = (const DropTarget &) = delete;
+	};
+
 	ProjectPanel(wxWindow * parent, wxWindowID windowID = wxID_ANY, const wxPoint & position = wxDefaultPosition, const wxSize & size = wxDefaultSize, long style = wxTAB_TRAVERSAL | wxNO_BORDER);
 	~ProjectPanel() override;
 
@@ -85,12 +98,13 @@ public:
 	boost::signals2::signal<void (ProjectPanel & /* projectPanel */, GameFilePanel & /* gameFilePanel */)> groupFileSelectionChanged;
 
 private:
-	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString & filePaths) override;
+	void onFilesDropped(std::vector<std::string> filePaths);
 	void onNotebookPageChanged(wxBookCtrlEvent & event);
 	void onGameFileModified(GameFilePanel & gameFilePanel);
 	void onGroupFileSelectionChanged(GroupPanel & groupPanel);
 
 	std::vector<SignalConnectionGroup> m_gameFilePanelConnections;
+	boost::signals2::connection m_filesDroppedConnection;
 	wxNotebook * m_notebook;
 
 	ProjectPanel(const ProjectPanel &) = delete;

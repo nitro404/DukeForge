@@ -32,7 +32,10 @@ ProjectPanel::ProjectPanel(wxWindow * parent, wxWindowID windowID, const wxPoint
 
 	Freeze();
 
-	SetDropTarget(this);
+	std::unique_ptr<DropTarget> dropTarget(std::make_unique<DropTarget>());
+	m_filesDroppedConnection = dropTarget->filesDropped.connect(std::bind(&ProjectPanel::onFilesDropped, this, std::placeholders::_1));
+	SetDropTarget(dropTarget.release());
+
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 
 	m_notebook = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP | wxNB_MULTILINE, "Game Files");
@@ -51,7 +54,9 @@ ProjectPanel::ProjectPanel(wxWindow * parent, wxWindowID windowID, const wxPoint
 	Thaw();
 }
 
-ProjectPanel::~ProjectPanel() { }
+ProjectPanel::~ProjectPanel() {
+	m_filesDroppedConnection.disconnect();
+}
 
 std::string ProjectPanel::getPanelName() const {
 	return "New Project";
@@ -1129,8 +1134,8 @@ bool ProjectPanel::closeAllGameFilePanels() {
 	return true;
 }
 
-bool ProjectPanel::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString & filePaths) {
-	return openGameFiles(WXUtilities::createItemStringList(filePaths)) != 0u;
+void ProjectPanel::onFilesDropped(std::vector<std::string> filePaths) {
+	openGameFiles(filePaths);
 }
 
 void ProjectPanel::onNotebookPageChanged(wxBookCtrlEvent & event) {
