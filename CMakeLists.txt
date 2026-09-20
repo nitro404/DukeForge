@@ -16,6 +16,7 @@ list(APPEND CMAKE_MODULE_PATH "${CORE_DIRECTORY}/CMake")
 
 include(Modules/ConfigurePlatform)
 include(Modules/ConfigureCPlusPlus)
+include(Modules/GenerateBinaryDataFile)
 include(Modules/GetGitCommitHash)
 include(Hunter/HunterInit)
 
@@ -35,6 +36,14 @@ if(WIN32)
 	string(TIMESTAMP CURRENT_YEAR "%Y")
 	string(TIMESTAMP BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S")
 	configure_file("${_RESOURCE_FILE_PATH}.in" "${_RESOURCE_FILE_PATH}" @ONLY)
+elseif(LINUX)
+	generate_binary_data_file(
+		INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Icon/DukeForge.ico"
+		TEMPLATE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Linux/IconData.cpp.in"
+		OUTPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Linux/IconData.cpp"
+		BYTES_PER_LINE 32
+		LINE_INDENTATION "\t"
+	)
 endif()
 
 include(SourceFiles)
@@ -56,6 +65,7 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT $
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
 		${_SOURCE_DIRECTORY}
+		${_RESOURCES_DIRECTORY}
 )
 
 target_compile_definitions(${PROJECT_NAME}

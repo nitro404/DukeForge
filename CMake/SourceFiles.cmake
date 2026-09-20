@@ -141,6 +141,7 @@ set(GUI_SOURCE_FILES
 	GUI/Game/File/Palette/TXT/PalettePanelTXT.cpp
 	GUI/Hyperlink.h
 	GUI/Hyperlink.cpp
+	GUI/IconUtilities.h
 	GUI/MetadataPanel.h
 	GUI/MetadataPanel.cpp
 	GUI/Project/ProjectPanel.h
@@ -156,9 +157,23 @@ set(GUI_SOURCE_FILES
 	GUI/WXUtilities.cpp
 )
 
+set(GUI_SOURCE_FILES_WINDOWS
+	GUI/Windows/IconUtilitiesWindows.cpp
+)
+
+set(GUI_SOURCE_FILES_LINUX
+	GUI/Linux/IconUtilitiesLinux.cpp
+)
+
+if(NOT WINDOWS AND NOT LINUX)
+	list(APPEND GUI_SOURCE_FILES
+		GUI/IconUtilitiesDefault.cpp
+	)
+endif()
+
 list(APPEND SOURCE_FILES ${MAIN_SOURCE_FILES} ${MAIN_SOURCE_FILES_${PLATFORM_UPPER}})
 
-list(APPEND SOURCE_FILES ${GUI_SOURCE_FILES})
+list(APPEND SOURCE_FILES ${GUI_SOURCE_FILES} ${GUI_SOURCE_FILES_${PLATFORM_UPPER}})
 
 list(TRANSFORM SOURCE_FILES PREPEND "${_SOURCE_DIRECTORY}/")
 

@@ -2,6 +2,7 @@
 
 #include "Application/SettingsManager.h"
 #include "Console/Logging/LogSinkWX.h"
+#include "IconUtilities.h"
 #include "Project.h"
 #include "WXUtilities.h"
 
@@ -173,9 +174,7 @@ void DukeForgeApplication::initialize() {
 
 	m_initializingProgressDialog = std::make_unique<wxProgressDialog>("Initializing", BASE_INITIALIZATION_MESSAGE, m_dukeForge->numberOfInitializationSteps(), nullptr, wxPD_AUTO_HIDE | wxPD_CAN_ABORT);
 
-#if defined(WINDOWS)
-	m_initializingProgressDialog->SetIcon(wxICON(DUKEFORGE_ICON));
-#endif // WINDOWS
+	IconUtilities::setIcon(m_initializingProgressDialog.get());
 
 	m_initializingProgressDialog->Fit();
 
@@ -223,9 +222,7 @@ void DukeForgeApplication::showWindow() {
 
 	std::unique_ptr<wxProgressDialog> windowCreationProgressDialog(std::make_unique<wxProgressDialog>("Initializing", BASE_INITIALIZATION_MESSAGE + "\nInitializing window...", m_dukeForge->numberOfInitializationSteps() + 2, nullptr, wxPD_AUTO_HIDE | wxPD_CAN_ABORT));
 
-#if defined(WINDOWS)
-	windowCreationProgressDialog->SetIcon(wxICON(DUKEFORGE_ICON));
-#endif // WINDOWS
+	IconUtilities::setIcon(windowCreationProgressDialog.get());
 
 	windowCreationProgressDialog->Fit();
 	windowCreationProgressDialog->Update(m_dukeForge->numberOfInitializationSteps(), windowCreationProgressDialog->GetMessage());

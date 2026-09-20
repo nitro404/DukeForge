@@ -2,7 +2,7 @@
 
 #include "Hyperlink.h"
 
-#include <wx/msgdlg.h> 
+#include <wx/msgdlg.h>
 
 const std::string WXUtilities::FILE_DIALOG_ALL_FILES("All Files (*.*)|*.*");
 

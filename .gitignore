@@ -6,6 +6,7 @@ Time Zone/
 .vs
 Project.h
 Environment.h
+IconData.cpp
 Resource.rc
 CDROM.INI
 DUKE3D.CFG

@@ -8,6 +8,7 @@
 #include "GUI/Game/File/GameFilePanel.h"
 #include "GUI/Game/File/GameFilePanelFactoryRegistry.h"
 #include "GUI/Game/File/Group/GroupPanel.h"
+#include "IconUtilities.h"
 #include "Project.h"
 #include "Project/ProjectPanel.h"
 #include "Releases/ReleaseNotesPanel.h"
@@ -46,9 +47,7 @@ DukeForgeFrame::DukeForgeFrame()
 	, m_settingsManagerPanel(nullptr) {
 	wxASSERT(wxIsMainThread());
 
-#if defined(WINDOWS)
-	SetIcon(wxICON(DUKEFORGE_ICON));
-#endif // WINDOWS
+	IconUtilities::setIcon(this);
 }
 
 DukeForgeFrame::~DukeForgeFrame() {
