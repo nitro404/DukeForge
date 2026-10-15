@@ -1,6 +1,7 @@
 #include "DukeForge.h"
 
 #include "Game/File/GameFileFactoryRegistry.h"
+#include "Game/File/Map/Map.h"
 #include "Project.h"
 #include "SettingsManager.h"
 
@@ -182,6 +183,84 @@ bool DukeForge::initialize(std::shared_ptr<ArgumentParser> arguments) {
 	}
 
 	notifyInitializationProgress("Initialization Complete");
+
+	const std::string MAP_DIRECTORY("C:\\Users\\nitro\\Desktop\\Duke Caribbean 2\\maps\\");
+
+	const std::vector<std::string> RELATIVE_MAP_FILE_PATHS({
+		"Cruise/E1M6_v7.map",
+		"E1M1_Plane/E1M1_v31.map",
+		"E1M2_Airport/E1M2_v35.map",
+		"E1M3_Hotel/E1M3_v38.map",
+		"E1M4_World/E1M4_v69.map",
+		"E1M5_Winterland/E1M5_v44.map",
+		"E1M6_Canaveral/E1M6_v46.map",
+		"E1M7_Jurassic/E1M7_v66.map",
+		"E1M8_Volcano/E1M8_v21.map"
+	});
+
+	const std::map<uint16_t, uint16_t> SPRITE_MAP({
+		{ 2120, 2186 },
+		{ 2121, 2187 },
+		{ 2150, 2188 },
+		{ 2165, 2189 },
+		{ 1312, 1297 },
+		{ 3400, 3393 }
+	});
+
+	for(const std::string &relativeMapFilePath : RELATIVE_MAP_FILE_PATHS) {
+		const std::string mapFilePath(Utilities::joinPaths(MAP_DIRECTORY, relativeMapFilePath));
+
+		std::unique_ptr<Map> map(Map::loadFrom(mapFilePath));
+
+		if(map == nullptr) {
+			spdlog::error("Failed to load map: '{}'.", mapFilePath);
+			return false;
+		}
+
+		spdlog::info("Loaded map from file: '{}'.", relativeMapFilePath);
+
+		for(size_t i = 0; i < map->numberOfSprites(); i++) {
+			std::shared_ptr<Sprite> sprite = map->getSprite(i);
+			std::map<uint16_t, uint16_t>::const_iterator spriteIterator(SPRITE_MAP.find(sprite->getTileNumber()));
+
+			if(spriteIterator == SPRITE_MAP.cend()) {
+				continue;
+			}
+
+			spdlog::info("Replacing sprite #{} tile #{} with #{}.", i + 1, spriteIterator->first, spriteIterator->second);
+
+			sprite->setTileNumber(spriteIterator->second);
+		}
+
+		for(size_t i = 0; i < map->numberOfSprites(); i++) {
+			std::shared_ptr<Sprite> sprite = map->getSprite(i);
+
+			if(sprite->getTileNumber() != 9 || !sprite->hasHighTag()) {
+				continue;
+			}
+
+			std::map<uint16_t, uint16_t>::const_iterator spriteIterator(SPRITE_MAP.find(sprite->getHighTag()));
+
+			if(spriteIterator == SPRITE_MAP.cend()) {
+				continue;
+			}
+
+			spdlog::info("Replacing respawn sprite #{} tile high tag #{} with #{}.", i + 1, spriteIterator->first, spriteIterator->second);
+
+			sprite->setHighTag(spriteIterator->second);
+		}
+
+		std::string mapFileName(Utilities::getFileName(relativeMapFilePath));
+
+		spdlog::info("Saving map '{}' to new file...", mapFileName);
+
+		if(map->saveToMap(Utilities::joinPaths(MAP_DIRECTORY, mapFileName), false)) {
+			spdlog::info("Successfully saved map '{}' to file!", mapFileName);
+		}
+		else {
+			spdlog::error("Failed to save map '{}' to file!", mapFileName);
+		}
+	}
 
 	return true;
 }
